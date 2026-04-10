@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { parse, parseDocument } from "yaml";
 import { ConfigError } from "./errors.js";
 
@@ -178,9 +177,7 @@ export function saveConfig(config: AgnoConfig): void {
 		// No existing file -- create fresh document from config data
 		const data = {
 			current_context: config.current_context,
-			contexts: Object.fromEntries(
-				Object.entries(config.contexts).map(([name, ctx]) => [name, unmapContext(ctx)]),
-			),
+			contexts: Object.fromEntries(Object.entries(config.contexts).map(([name, ctx]) => [name, unmapContext(ctx)])),
 		};
 		const doc = parseDocument(JSON.stringify(data));
 		writeFileSync(_configFile, doc.toString(), { mode: 0o600 });
@@ -200,16 +197,13 @@ export function resolveContext(overrides: ResolveContextOptions): ContextConfig 
 	const name = overrides.contextName ?? process.env.AGNO_CONTEXT ?? config.current_context;
 	const ctx = config.contexts[name];
 	if (!ctx) {
-		throw new ConfigError(
-			`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`,
-		);
+		throw new ConfigError(`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`);
 	}
 
 	// Layer overrides: CLI flags > env vars > context values
 	return {
 		baseUrl: overrides.urlOverride ?? process.env.AGNO_BASE_URL ?? ctx.baseUrl,
-		securityKey:
-			overrides.keyOverride ?? process.env.AGNO_SECURITY_KEY ?? ctx.securityKey,
+		securityKey: overrides.keyOverride ?? process.env.AGNO_SECURITY_KEY ?? ctx.securityKey,
 		timeout:
 			overrides.timeoutOverride ??
 			(process.env.AGNO_TIMEOUT ? Number.parseFloat(process.env.AGNO_TIMEOUT) : undefined) ??

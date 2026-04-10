@@ -1,13 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { readFileSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Command } from "commander";
-import { parse } from "yaml";
-
-import { setConfigPath, loadConfig } from "../../src/lib/config.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { configCommand } from "../../src/commands/config.js";
+import { loadConfig, setConfigPath } from "../../src/lib/config.js";
 
 let testDir: string;
 let testConfigFile: string;
@@ -84,9 +82,7 @@ describe("config command", () => {
 
 		it("creates config with custom values via --url and --key", async () => {
 			const program = createProgram();
-			await program.parseAsync(
-				argv("config init --url http://custom:8000 --key sk-test --timeout 30"),
-			);
+			await program.parseAsync(argv("config init --url http://custom:8000 --key sk-test --timeout 30"));
 
 			const config = loadConfig();
 			expect(config.contexts.default?.baseUrl).toBe("http://custom:8000");
@@ -96,7 +92,10 @@ describe("config command", () => {
 
 		it("refuses to overwrite existing config", async () => {
 			// Create an existing config
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://old:7777\n    timeout: 60\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://old:7777\n    timeout: 60\n    security_key: null\n",
+			);
 
 			const program = createProgram();
 			await program.parseAsync(argv("config init"));
@@ -106,7 +105,10 @@ describe("config command", () => {
 		});
 
 		it("overwrites existing config with --force", async () => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://old:7777\n    timeout: 60\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://old:7777\n    timeout: 60\n    security_key: null\n",
+			);
 
 			const program = createProgram();
 			await program.parseAsync(argv("config init --force --url http://new:9000"));
@@ -119,7 +121,10 @@ describe("config command", () => {
 
 	describe("config add", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n",
+			);
 		});
 
 		it("adds a new context", async () => {
@@ -143,7 +148,10 @@ describe("config command", () => {
 
 	describe("config use", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  dev:\n    base_url: http://dev:7777\n    timeout: 30\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  dev:\n    base_url: http://dev:7777\n    timeout: 30\n    security_key: null\n",
+			);
 		});
 
 		it("switches active context", async () => {
@@ -166,7 +174,10 @@ describe("config command", () => {
 
 	describe("config list", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  prod:\n    base_url: https://prod.example.com\n    timeout: 30\n    security_key: sk-prod\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  prod:\n    base_url: https://prod.example.com\n    timeout: 30\n    security_key: sk-prod\n",
+			);
 		});
 
 		it("shows all contexts with active marker", async () => {
@@ -183,7 +194,10 @@ describe("config command", () => {
 
 	describe("config show", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: sk-show-test-abcdefgh\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: sk-show-test-abcdefgh\n",
+			);
 		});
 
 		it("displays active context details with masked key", async () => {
@@ -200,7 +214,10 @@ describe("config command", () => {
 
 	describe("config set", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n",
+			);
 		});
 
 		it("updates a field in active context", async () => {
@@ -215,7 +232,10 @@ describe("config command", () => {
 
 	describe("config remove", () => {
 		beforeEach(() => {
-			writeFileSync(testConfigFile, "current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  dev:\n    base_url: http://dev:7777\n    timeout: 30\n    security_key: null\n");
+			writeFileSync(
+				testConfigFile,
+				"current_context: default\ncontexts:\n  default:\n    base_url: http://localhost:7777\n    timeout: 60\n    security_key: null\n  dev:\n    base_url: http://dev:7777\n    timeout: 30\n    security_key: null\n",
+			);
 		});
 
 		it("deletes a named context", async () => {

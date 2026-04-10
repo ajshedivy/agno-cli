@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { readFileSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
-	loadConfig,
-	saveConfig,
-	resolveContext,
-	configExists,
-	setConfigPath,
 	type AgnoConfig,
+	configExists,
+	loadConfig,
+	resolveContext,
+	saveConfig,
+	setConfigPath,
 } from "../../src/lib/config.js";
 
 let testDir: string;
@@ -50,10 +50,7 @@ describe("config module", () => {
 		});
 
 		it("parses valid YAML fixture and returns typed AgnoConfig", () => {
-			const fixture = readFileSync(
-				join(import.meta.dirname, "..", "fixtures", "config.yaml"),
-				"utf-8",
-			);
+			const fixture = readFileSync(join(import.meta.dirname, "..", "fixtures", "config.yaml"), "utf-8");
 			writeFileSync(testConfigFile, fixture);
 
 			const config = loadConfig();
@@ -67,10 +64,7 @@ describe("config module", () => {
 		});
 
 		it("converts YAML null security_key to undefined", () => {
-			const fixture = readFileSync(
-				join(import.meta.dirname, "..", "fixtures", "config.yaml"),
-				"utf-8",
-			);
+			const fixture = readFileSync(join(import.meta.dirname, "..", "fixtures", "config.yaml"), "utf-8");
 			writeFileSync(testConfigFile, fixture);
 
 			const config = loadConfig();
@@ -207,9 +201,7 @@ contexts:
 		});
 
 		it("throws ConfigError for unknown context name", () => {
-			expect(() => resolveContext({ contextName: "nonexistent" })).toThrow(
-				/Context 'nonexistent' not found/,
-			);
+			expect(() => resolveContext({ contextName: "nonexistent" })).toThrow(/Context 'nonexistent' not found/);
 		});
 
 		it("uses AGNO_CONTEXT env var for context name selection", () => {
