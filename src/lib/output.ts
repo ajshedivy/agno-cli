@@ -4,14 +4,54 @@ import type { Command } from "commander";
 
 /**
  * Determine output format from command options or TTY detection.
- * Returns "json" when explicitly requested or when stdout is not a TTY (piped).
+ * Returns "json" when explicitly requested, when --json flag is used, or when stdout is not a TTY (piped).
  * Returns "table" when explicitly requested or when stdout is a TTY (interactive).
  */
 export function getOutputFormat(cmd: Command): "table" | "json" {
 	const globals = cmd.optsWithGlobals();
+	if (globals.json !== undefined) return "json"; // --json implies JSON output (D-19)
 	if (globals.output === "json") return "json";
 	if (globals.output === "table") return "table";
 	return process.stdout.isTTY ? "table" : "json";
+}
+
+/**
+ * Get field selection from --json flag if present.
+ * Returns the comma-separated field string when --json was used with a value (e.g., --json id,name).
+ * Returns undefined when --json was used without a value or not used at all.
+ */
+export function getJsonFields(cmd: Command): string | undefined {
+	const globals = cmd.optsWithGlobals();
+	if (typeof globals.json === "string") return globals.json;
+	return undefined;
+}
+
+/**
+ * Select specific fields from a data object or array of objects.
+ * Used by --json field1,field2 to filter output to only requested fields.
+ */
+export function selectFields(
+	data: Record<string, unknown> | Record<string, unknown>[],
+	fields: string,
+): unknown {
+	const fieldList = fields.split(",").map((f) => f.trim());
+	if (Array.isArray(data)) {
+		return data.map((item) => pickFields(item, fieldList));
+	}
+	return pickFields(data, fieldList);
+}
+
+/**
+ * Pick only specified fields from an object.
+ */
+function pickFields(obj: Record<string, unknown>, fields: string[]): Record<string, unknown> {
+	const result: Record<string, unknown> = {};
+	for (const field of fields) {
+		if (field in obj) {
+			result[field] = obj[field];
+		}
+	}
+	return result;
 }
 
 /**
@@ -30,6 +70,14 @@ export function outputList(
 ): void {
 	const format = getOutputFormat(cmd);
 	if (format === "json") {
+		const fields = getJsonFields(cmd);
+		if (fields) {
+			// --json field1,field2: output only selected fields, no envelope
+			const filtered = selectFields(data, fields);
+			process.stdout.write(`${JSON.stringify(filtered, null, 2)}\n`);
+			return;
+		}
+		// Standard JSON: full data with envelope
 		const envelope: Record<string, unknown> = { data };
 		if (opts.meta) envelope.meta = opts.meta;
 		process.stdout.write(`${JSON.stringify(envelope, null, 2)}\n`);
@@ -60,6 +108,12 @@ export function outputDetail(
 ): void {
 	const format = getOutputFormat(cmd);
 	if (format === "json") {
+		const fields = getJsonFields(cmd);
+		if (fields) {
+			const filtered = selectFields(data, fields);
+			process.stdout.write(`${JSON.stringify(filtered, null, 2)}\n`);
+			return;
+		}
 		process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
 		return;
 	}

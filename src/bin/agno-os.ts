@@ -25,7 +25,8 @@ const program = new Command("agno-os")
 	.option("--key <key>", "Override security key")
 	.option("--timeout <seconds>", "Override timeout", Number.parseFloat)
 	.option("--no-color", "Disable color output")
-	.option("-v, --verbose", "Enable verbose output");
+	.option("-v, --verbose", "Enable verbose output")
+	.option("--json [fields]", "Output JSON with optional field selection (e.g., --json id,name)");
 
 // Pre-action hook: bridge --no-color flag to chalk
 program.hook("preAction", (thisCommand) => {
