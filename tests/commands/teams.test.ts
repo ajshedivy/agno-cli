@@ -56,9 +56,7 @@ describe("team command", () => {
 			expect(mockTeamsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
-				expect.arrayContaining([
-					expect.objectContaining({ id: "t1", name: "Team 1", mode: "coordinate" }),
-				]),
+				expect.arrayContaining([expect.objectContaining({ id: "t1", name: "Team 1", mode: "coordinate" })]),
 				expect.objectContaining({
 					columns: ["ID", "NAME", "MODE", "DESCRIPTION"],
 					keys: ["id", "name", "mode", "description"],

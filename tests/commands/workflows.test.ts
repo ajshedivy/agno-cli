@@ -56,9 +56,7 @@ describe("workflow command", () => {
 			expect(mockWorkflowsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
-				expect.arrayContaining([
-					expect.objectContaining({ id: "w1", name: "Workflow 1" }),
-				]),
+				expect.arrayContaining([expect.objectContaining({ id: "w1", name: "Workflow 1" })]),
 				expect.objectContaining({
 					columns: ["ID", "NAME", "DESCRIPTION"],
 					keys: ["id", "name", "description"],
