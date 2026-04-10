@@ -66,6 +66,12 @@ program.addCommand(modelCommand);
 const { metricsCommand } = await import("../commands/metrics.js");
 program.addCommand(metricsCommand);
 
+const { sessionCommand } = await import("../commands/sessions.js");
+program.addCommand(sessionCommand);
+
+const { memoryCommand } = await import("../commands/memories.js");
+program.addCommand(memoryCommand);
+
 // Error handling for Commander parse failures
 program.exitOverride();
 try {
