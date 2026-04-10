@@ -1,7 +1,9 @@
+import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
 import { getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
-import { getOutputFormat, outputDetail, outputList } from "../lib/output.js";
+import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
+import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
 
 export const workflowCommand = new Command("workflow").description("Manage workflows");
 
@@ -74,6 +76,95 @@ workflowCommand
 					keys: ["id", "name", "description", "steps", "workflow_agent"],
 				},
 			);
+		} catch (err) {
+			handleError(err);
+		}
+	});
+
+workflowCommand
+	.command("run")
+	.argument("<workflow_id>", "Workflow ID")
+	.argument("<message>", "Message to send to the workflow")
+	.description("Run a workflow with a message")
+	.option("-s, --stream", "Stream the response via SSE")
+	.option("--session-id <id>", "Session ID for conversation context")
+	.option("--user-id <id>", "User ID for personalization")
+	.action(async (workflowId: string, message: string, options, cmd) => {
+		try {
+			const client = getClient(cmd);
+			if (options.stream) {
+				const stream = await client.workflows.runStream(workflowId, {
+					message,
+					sessionId: options.sessionId,
+					userId: options.userId,
+				});
+				await handleStreamRun(cmd, stream, "workflow");
+			} else {
+				await handleNonStreamRun(cmd, () =>
+					client.workflows.run(workflowId, {
+						message,
+						sessionId: options.sessionId,
+						userId: options.userId,
+					}),
+				);
+			}
+		} catch (err) {
+			handleError(err);
+		}
+	});
+
+workflowCommand
+	.command("continue")
+	.argument("<workflow_id>", "Workflow ID")
+	.argument("<run_id>", "Run ID to continue")
+	.argument("<message>", "Message to continue with")
+	.description("Continue a workflow run")
+	.option("-s, --stream", "Stream the response via SSE")
+	.option("--session-id <id>", "Session ID")
+	.option("--user-id <id>", "User ID")
+	.action(async (workflowId: string, runId: string, message: string, options, cmd) => {
+		try {
+			const client = getClient(cmd);
+			if (options.stream) {
+				const stream = await client.workflows.continue(workflowId, runId, {
+					tools: message,
+					sessionId: options.sessionId,
+					userId: options.userId,
+					stream: true,
+				});
+				await handleStreamRun(cmd, stream as AgentStream, "workflow");
+			} else {
+				const result = await client.workflows.continue(workflowId, runId, {
+					tools: message,
+					sessionId: options.sessionId,
+					userId: options.userId,
+					stream: false,
+				});
+				const format = getOutputFormat(cmd);
+				if (format === "json") {
+					process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+				} else {
+					const content = (result as Record<string, unknown>).content;
+					if (content) {
+						process.stdout.write(`${typeof content === "string" ? content : JSON.stringify(content, null, 2)}\n`);
+					}
+				}
+			}
+		} catch (err) {
+			handleError(err);
+		}
+	});
+
+workflowCommand
+	.command("cancel")
+	.argument("<workflow_id>", "Workflow ID")
+	.argument("<run_id>", "Run ID to cancel")
+	.description("Cancel an in-progress workflow run")
+	.action(async (workflowId: string, runId: string, _options, cmd) => {
+		try {
+			const client = getClient(cmd);
+			await client.workflows.cancel(workflowId, runId);
+			writeSuccess(`Cancelled run ${runId} for workflow ${workflowId}`);
 		} catch (err) {
 			handleError(err);
 		}
