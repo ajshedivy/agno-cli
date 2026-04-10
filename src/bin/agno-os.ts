@@ -9,8 +9,8 @@ process.stderr.on("error", (err: NodeJS.ErrnoException) => {
 });
 
 import { Command } from "commander";
-import { handleNoColorFlag } from "../lib/output.js";
 import { handleError } from "../lib/errors.js";
+import { handleNoColorFlag } from "../lib/output.js";
 
 // Version injected by tsup define at build time.
 // During dev (tsx), process.env.CLI_VERSION won't be replaced, so fall back to "dev".

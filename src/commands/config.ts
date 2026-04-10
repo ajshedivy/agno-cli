@@ -1,23 +1,8 @@
 import { Command } from "commander";
-import {
-	loadConfig,
-	saveConfig,
-	configExists,
-	getConfigPath,
-	type AgnoConfig,
-} from "../lib/config.js";
-import {
-	outputList,
-	outputDetail,
-	writeSuccess,
-	writeError,
-	maskKey,
-	getOutputFormat,
-} from "../lib/output.js";
+import { type AgnoConfig, configExists, getConfigPath, loadConfig, saveConfig } from "../lib/config.js";
+import { getOutputFormat, maskKey, outputDetail, outputList, writeError, writeSuccess } from "../lib/output.js";
 
-export const configCommand = new Command("config").description(
-	"Manage endpoint contexts and configuration",
-);
+export const configCommand = new Command("config").description("Manage endpoint contexts and configuration");
 
 // ── config init ──────────────────────────────────────────────────────
 
@@ -29,11 +14,12 @@ configCommand
 	.option("--timeout <seconds>", "Timeout in seconds", Number.parseFloat, 60)
 	.option("-f, --force", "Overwrite existing config")
 	.action((_options, cmd) => {
-		const options = cmd.opts();
+		// Use optsWithGlobals() because --url, --key, --timeout collide with
+		// global options of the same name. Commander routes the value to the
+		// root program; optsWithGlobals() merges them so the value is visible.
+		const options = cmd.optsWithGlobals();
 		if (configExists() && !options.force) {
-			writeError(
-				`Config already exists at ${getConfigPath()}. Use --force to overwrite.`,
-			);
+			writeError(`Config already exists at ${getConfigPath()}. Use --force to overwrite.`);
 			process.exitCode = 1;
 			return;
 		}
@@ -42,8 +28,8 @@ configCommand
 			current_context: "default",
 			contexts: {
 				default: {
-					baseUrl: options.url as string,
-					timeout: options.timeout as number,
+					baseUrl: (options.url as string) ?? "http://localhost:7777",
+					timeout: (options.timeout as number) ?? 60,
 					securityKey: options.key as string | undefined,
 				},
 			},
@@ -58,24 +44,30 @@ configCommand
 	.command("add")
 	.argument("<name>", "Context name")
 	.description("Add a new context")
-	.requiredOption("--url <url>", "Base URL of the AgentOS instance")
+	.option("--url <url>", "Base URL of the AgentOS instance (required)")
 	.option("--key <key>", "Security key")
 	.option("--timeout <seconds>", "Timeout in seconds", Number.parseFloat, 60)
 	.action((name: string, _options, cmd) => {
-		const options = cmd.opts();
+		// Use optsWithGlobals() -- see config init comment for rationale.
+		const options = cmd.optsWithGlobals();
+
+		if (!options.url) {
+			writeError("Missing required option --url <url>");
+			process.exitCode = 1;
+			return;
+		}
+
 		const config = loadConfig();
 
 		if (config.contexts[name]) {
-			writeError(
-				`Context '${name}' already exists. Use 'config set' to modify it.`,
-			);
+			writeError(`Context '${name}' already exists. Use 'config set' to modify it.`);
 			process.exitCode = 1;
 			return;
 		}
 
 		config.contexts[name] = {
 			baseUrl: options.url as string,
-			timeout: options.timeout as number,
+			timeout: (options.timeout as number) ?? 60,
 			securityKey: options.key as string | undefined,
 		};
 		saveConfig(config);
@@ -92,9 +84,7 @@ configCommand
 		const config = loadConfig();
 
 		if (!config.contexts[name]) {
-			writeError(
-				`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`,
-			);
+			writeError(`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`);
 			process.exitCode = 1;
 			return;
 		}
@@ -195,9 +185,7 @@ configCommand
 				ctx.securityKey = value;
 				break;
 			default:
-				writeError(
-					`Unknown config key '${key}'. Valid keys: base_url, timeout, security_key`,
-				);
+				writeError(`Unknown config key '${key}'. Valid keys: base_url, timeout, security_key`);
 				process.exitCode = 1;
 				return;
 		}
