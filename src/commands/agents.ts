@@ -148,9 +148,7 @@ agentCommand
 				} else {
 					const content = (result as Record<string, unknown>).content;
 					if (content) {
-						process.stdout.write(
-							`${typeof content === "string" ? content : JSON.stringify(content, null, 2)}\n`,
-						);
+						process.stdout.write(`${typeof content === "string" ? content : JSON.stringify(content, null, 2)}\n`);
 					}
 				}
 			}

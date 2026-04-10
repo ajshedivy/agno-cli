@@ -54,11 +54,7 @@ function formatContent(content: unknown): string {
  * Registers a SIGINT handler before iteration to cleanly abort the stream,
  * and removes it in the finally block to prevent handler accumulation.
  */
-export async function handleStreamRun(
-	cmd: Command,
-	stream: AgentStream,
-	resourceType: ResourceType,
-): Promise<void> {
+export async function handleStreamRun(cmd: Command, stream: AgentStream, resourceType: ResourceType): Promise<void> {
 	const format = getOutputFormat(cmd);
 	const contentEvent = CONTENT_EVENTS[resourceType];
 	const completedEvent = COMPLETED_EVENTS[resourceType];
@@ -81,7 +77,10 @@ export async function handleStreamRun(
 			let metrics: Record<string, unknown> | undefined;
 			for await (const event of stream) {
 				if (event.event === errorEvent) {
-					const errorMsg = (event as Record<string, unknown>).error ?? (event as Record<string, unknown>).content ?? "Unknown stream error";
+					const errorMsg =
+						(event as Record<string, unknown>).error ??
+						(event as Record<string, unknown>).content ??
+						"Unknown stream error";
 					writeError(String(errorMsg));
 					process.exitCode = 2;
 				} else if (event.event === contentEvent) {
@@ -111,10 +110,7 @@ export async function handleStreamRun(
  * then writes the result content to stdout.
  * Stops the spinner on error before rethrowing.
  */
-export async function handleNonStreamRun(
-	cmd: Command,
-	runFn: () => Promise<unknown>,
-): Promise<void> {
+export async function handleNonStreamRun(cmd: Command, runFn: () => Promise<unknown>): Promise<void> {
 	const format = getOutputFormat(cmd);
 
 	// Import ora (ESM-only package)
