@@ -1,9 +1,82 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { Command } from "commander";
 import { getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
-import { getOutputFormat, outputDetail, outputList, printJson, writeSuccess } from "../lib/output.js";
+import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
 export const knowledgeCommand = new Command("knowledge").description("Manage knowledge base");
+
+// -- knowledge upload --------------------------------------------------------
+
+knowledgeCommand
+	.command("upload")
+	.argument("[file_path]", "Local file path to upload")
+	.description("Upload content to knowledge base")
+	.option("--url <url>", "Upload from URL instead of file")
+	.option("--name <name>", "Content name")
+	.option("--description <desc>", "Content description")
+	.option("--db-id <id>", "Database ID")
+	.action(async (filePath: string | undefined, _options, cmd) => {
+		try {
+			const opts = cmd.optsWithGlobals();
+			const client = getClient(cmd);
+
+			if (!filePath && !opts.url) {
+				writeError("Provide a file path or --url");
+				process.exitCode = 1;
+				return;
+			}
+
+			if (filePath && opts.url) {
+				writeError("Provide either a file path or --url, not both");
+				process.exitCode = 1;
+				return;
+			}
+
+			const uploadOpts: Record<string, unknown> = {
+				name: opts.name,
+				description: opts.description,
+				dbId: opts.dbId,
+			};
+
+			if (filePath) {
+				const resolved = resolve(filePath);
+				if (!existsSync(resolved)) {
+					writeError(`File not found: ${resolved}`);
+					process.exitCode = 1;
+					return;
+				}
+				uploadOpts.file = resolved;
+			} else {
+				uploadOpts.url = opts.url;
+			}
+
+			const result = (await client.knowledge.upload(uploadOpts)) as Record<string, unknown>;
+
+			const format = getOutputFormat(cmd);
+			if (format === "json") {
+				printJson(result);
+			} else {
+				outputDetail(
+					cmd,
+					{
+						id: result.id ?? "",
+						name: result.name ?? "",
+						status: result.status ?? "",
+						type: result.type ?? "",
+					},
+					{
+						labels: ["ID", "Name", "Status", "Type"],
+						keys: ["id", "name", "status", "type"],
+					},
+				);
+			}
+			process.stderr.write(`Check status: agno-os knowledge status ${result.id}\n`);
+		} catch (err) {
+			handleError(err);
+		}
+	});
 
 // -- knowledge list ----------------------------------------------------------
 
