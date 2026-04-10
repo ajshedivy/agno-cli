@@ -81,6 +81,24 @@ program.addCommand(traceCommand);
 const { evalCommand } = await import("../commands/evals.js");
 program.addCommand(evalCommand);
 
+const { approvalCommand } = await import("../commands/approvals.js");
+program.addCommand(approvalCommand);
+
+const { authCommand } = await import("../commands/auth.js");
+program.addCommand(authCommand);
+
+const { componentCommand } = await import("../commands/components.js");
+program.addCommand(componentCommand);
+
+const { scheduleCommand } = await import("../commands/schedules.js");
+program.addCommand(scheduleCommand);
+
+const { databaseCommand } = await import("../commands/database.js");
+program.addCommand(databaseCommand);
+
+const { registryCommand } = await import("../commands/registry.js");
+program.addCommand(registryCommand);
+
 // Error handling for Commander parse failures
 program.exitOverride();
 try {
