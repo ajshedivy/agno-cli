@@ -1,0 +1,12 @@
+# Test config with comments
+current_context: dev
+contexts:
+  dev:
+    base_url: "http://localhost:7777"
+    timeout: 30.0
+    security_key: null
+  prod:
+    # Production endpoint
+    base_url: "https://agentos.example.com"
+    timeout: 60.0
+    security_key: "sk-test-key-12345678"
