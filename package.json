@@ -1,0 +1,40 @@
+{
+	"name": "agno-os",
+	"version": "0.1.0",
+	"description": "CLI for interacting with AgentOS instances",
+	"type": "module",
+	"bin": {
+		"agno-os": "./dist/bin/agno-os.js"
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsx src/bin/agno-os.ts",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"commander": "^14.0",
+		"yaml": "^2.8",
+		"chalk": "^5.6",
+		"cli-table3": "^0.6.5",
+		"ora": "^9.3",
+		"@worksofadam/agentos-sdk": "file:../../../../agentos-sdk"
+	},
+	"devDependencies": {
+		"typescript": "^5.7",
+		"tsup": "^8.5",
+		"@biomejs/biome": "^2.3",
+		"vitest": "^2.1",
+		"tsx": "^4.21",
+		"@types/node": "^22"
+	}
+}
