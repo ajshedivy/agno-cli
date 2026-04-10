@@ -48,6 +48,24 @@ Examples:
 const { configCommand } = await import("../commands/config.js");
 program.addCommand(configCommand);
 
+const { statusCommand } = await import("../commands/status.js");
+program.addCommand(statusCommand);
+
+const { agentCommand } = await import("../commands/agents.js");
+program.addCommand(agentCommand);
+
+const { teamCommand } = await import("../commands/teams.js");
+program.addCommand(teamCommand);
+
+const { workflowCommand } = await import("../commands/workflows.js");
+program.addCommand(workflowCommand);
+
+const { modelCommand } = await import("../commands/models.js");
+program.addCommand(modelCommand);
+
+const { metricsCommand } = await import("../commands/metrics.js");
+program.addCommand(metricsCommand);
+
 // Error handling for Commander parse failures
 program.exitOverride();
 try {

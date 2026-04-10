@@ -17,15 +17,22 @@ export function getOutputFormat(cmd: Command): "table" | "json" {
 /**
  * Render a list of records as either a JSON array or a cli-table3 table.
  * JSON mode wraps data in a { data: [...] } envelope for consistent parsing.
+ * When opts.meta is provided, JSON output includes pagination metadata.
  */
 export function outputList(
 	cmd: Command,
 	data: Record<string, unknown>[],
-	opts: { columns: string[]; keys: string[] },
+	opts: {
+		columns: string[];
+		keys: string[];
+		meta?: { page: number; limit: number; total_pages: number; total_count: number };
+	},
 ): void {
 	const format = getOutputFormat(cmd);
 	if (format === "json") {
-		process.stdout.write(`${JSON.stringify({ data }, null, 2)}\n`);
+		const envelope: Record<string, unknown> = { data };
+		if (opts.meta) envelope.meta = opts.meta;
+		process.stdout.write(`${JSON.stringify(envelope, null, 2)}\n`);
 		return;
 	}
 
