@@ -1,45 +1,28 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { readFileSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
-// We'll dynamically import the module so we can control the config path
-// The config module uses AGNO_CONFIG_DIR and AGNO_CONFIG_FILE constants
-// We mock them via vi.mock
-
-let testDir: string;
-let testConfigFile: string;
-
-// Mock the config constants to point to temp directory
-vi.mock("../../src/lib/config.js", async (importOriginal) => {
-	const mod = await importOriginal<typeof import("../../src/lib/config.js")>();
-	return {
-		...mod,
-		get AGNO_CONFIG_DIR() {
-			return testDir;
-		},
-		get AGNO_CONFIG_FILE() {
-			return testConfigFile;
-		},
-	};
-});
-
-// Re-import after mock setup -- use the functions that read from our mocked paths
 import {
 	loadConfig,
 	saveConfig,
 	resolveContext,
 	configExists,
+	setConfigPath,
 	type AgnoConfig,
-	type ContextConfig,
 } from "../../src/lib/config.js";
+
+let testDir: string;
+let testConfigFile: string;
 
 describe("config module", () => {
 	beforeEach(() => {
 		testDir = join(tmpdir(), `agno-test-${randomUUID()}`);
 		testConfigFile = join(testDir, "config.yaml");
 		mkdirSync(testDir, { recursive: true });
+		// Point the config module at our temp path
+		setConfigPath(testConfigFile);
 		// Clear env vars
 		delete process.env.AGNO_BASE_URL;
 		delete process.env.AGNO_SECURITY_KEY;
@@ -49,6 +32,7 @@ describe("config module", () => {
 
 	afterEach(() => {
 		rmSync(testDir, { recursive: true, force: true });
+		setConfigPath(undefined);
 		delete process.env.AGNO_BASE_URL;
 		delete process.env.AGNO_SECURITY_KEY;
 		delete process.env.AGNO_TIMEOUT;
@@ -57,7 +41,6 @@ describe("config module", () => {
 
 	describe("loadConfig", () => {
 		it("returns default config when file does not exist", () => {
-			// testConfigFile doesn't exist yet
 			const config = loadConfig();
 			expect(config.current_context).toBe("default");
 			expect(config.contexts.default).toBeDefined();
@@ -67,7 +50,6 @@ describe("config module", () => {
 		});
 
 		it("parses valid YAML fixture and returns typed AgnoConfig", () => {
-			// Copy fixture to test dir
 			const fixture = readFileSync(
 				join(import.meta.dirname, "..", "fixtures", "config.yaml"),
 				"utf-8",
@@ -99,8 +81,10 @@ describe("config module", () => {
 
 	describe("saveConfig", () => {
 		it("creates config directory with proper permissions", () => {
-			// Remove test dir so saveConfig must create it
-			rmSync(testDir, { recursive: true, force: true });
+			// Point to a nested path that doesn't exist yet
+			const nestedDir = join(testDir, "nested", "dir");
+			const nestedFile = join(nestedDir, "config.yaml");
+			setConfigPath(nestedFile);
 
 			const config: AgnoConfig = {
 				current_context: "default",
@@ -113,7 +97,7 @@ describe("config module", () => {
 				},
 			};
 			saveConfig(config);
-			expect(existsSync(testDir)).toBe(true);
+			expect(existsSync(nestedDir)).toBe(true);
 		});
 
 		it("writes valid YAML that can be re-parsed", () => {
@@ -175,7 +159,6 @@ contexts:
 
 	describe("resolveContext", () => {
 		beforeEach(() => {
-			// Create a test config file
 			const yaml = `current_context: dev
 contexts:
   dev:
