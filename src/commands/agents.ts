@@ -8,8 +8,8 @@ export const agentCommand = new Command("agent").description("Manage agents");
 agentCommand
 	.command("list")
 	.description("List all agents")
-	.option("--limit <n>", "Results per page", Number.parseInt, 20)
-	.option("--page <n>", "Page number", Number.parseInt, 1)
+	.option("--limit <n>", "Results per page", (v: string) => Number.parseInt(v, 10), 20)
+	.option("--page <n>", "Page number", (v: string) => Number.parseInt(v, 10), 1)
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
