@@ -3,9 +3,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockAgentsList = vi.fn();
 const mockAgentsGet = vi.fn();
+const mockAgentsRun = vi.fn();
+const mockAgentsRunStream = vi.fn();
+const mockAgentsContinue = vi.fn();
+const mockAgentsCancel = vi.fn();
 vi.mock("../../src/lib/client.js", () => ({
 	getClient: vi.fn(() => ({
-		agents: { list: mockAgentsList, get: mockAgentsGet },
+		agents: {
+			list: mockAgentsList,
+			get: mockAgentsGet,
+			run: mockAgentsRun,
+			runStream: mockAgentsRunStream,
+			continue: mockAgentsContinue,
+			cancel: mockAgentsCancel,
+		},
 	})),
 }));
 
@@ -23,6 +34,13 @@ vi.mock("../../src/lib/output.js", () => ({
 const mockHandleError = vi.fn();
 vi.mock("../../src/lib/errors.js", () => ({
 	handleError: (...args: unknown[]) => mockHandleError(...args),
+}));
+
+const mockHandleStreamRun = vi.fn();
+const mockHandleNonStreamRun = vi.fn();
+vi.mock("../../src/lib/stream.js", () => ({
+	handleStreamRun: (...args: unknown[]) => mockHandleStreamRun(...args),
+	handleNonStreamRun: (...args: unknown[]) => mockHandleNonStreamRun(...args),
 }));
 
 import { agentCommand } from "../../src/commands/agents.js";
@@ -169,6 +187,205 @@ describe("agent command", () => {
 			expect(parsed.id).toBe("a1");
 
 			stdoutSpy.mockRestore();
+		});
+	});
+
+	describe("agent run", () => {
+		it("calls client.agents.run and handleNonStreamRun without --stream", async () => {
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+
+			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
+			expect(mockAgentsRunStream).not.toHaveBeenCalled();
+		});
+
+		it("calls handleNonStreamRun with correct run function", async () => {
+			const runResult = { content: "Response", metrics: {} };
+			mockAgentsRun.mockResolvedValue(runResult);
+
+			// Capture the runFn and call it to verify it delegates correctly
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+				await runFn();
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+
+			expect(mockAgentsRun).toHaveBeenCalledWith("a1", {
+				message: "hello",
+				sessionId: undefined,
+				userId: undefined,
+			});
+		});
+
+		it("calls client.agents.runStream and handleStreamRun with --stream", async () => {
+			const mockStream = { fake: "stream" };
+			mockAgentsRunStream.mockResolvedValue(mockStream);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello", "--stream"]);
+
+			expect(mockAgentsRunStream).toHaveBeenCalledWith("a1", {
+				message: "hello",
+				sessionId: undefined,
+				userId: undefined,
+			});
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent");
+		});
+
+		it("passes --session-id and --user-id to run", async () => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+				await runFn();
+			});
+
+			const program = createProgram();
+			await program.parseAsync([
+				"node",
+				"agno-os",
+				"agent",
+				"run",
+				"a1",
+				"hello",
+				"--session-id",
+				"s1",
+				"--user-id",
+				"u1",
+			]);
+
+			expect(mockAgentsRun).toHaveBeenCalledWith("a1", {
+				message: "hello",
+				sessionId: "s1",
+				userId: "u1",
+			});
+		});
+
+		it("passes --session-id and --user-id to runStream", async () => {
+			mockAgentsRunStream.mockResolvedValue({ fake: "stream" });
+
+			const program = createProgram();
+			await program.parseAsync([
+				"node",
+				"agno-os",
+				"agent",
+				"run",
+				"a1",
+				"hello",
+				"--stream",
+				"--session-id",
+				"s1",
+				"--user-id",
+				"u1",
+			]);
+
+			expect(mockAgentsRunStream).toHaveBeenCalledWith("a1", {
+				message: "hello",
+				sessionId: "s1",
+				userId: "u1",
+			});
+		});
+
+		it("handles run errors with handleError", async () => {
+			const error = new Error("run failed");
+			mockHandleNonStreamRun.mockRejectedValue(error);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+
+			expect(mockHandleError).toHaveBeenCalledWith(error);
+		});
+	});
+
+	describe("agent continue", () => {
+		it("calls client.agents.continue with tools=message (non-streaming)", async () => {
+			mockAgentsContinue.mockResolvedValue({ content: "continued" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "keep going"]);
+
+			expect(mockAgentsContinue).toHaveBeenCalledWith("a1", "r1", {
+				tools: "keep going",
+				sessionId: undefined,
+				userId: undefined,
+				stream: false,
+			});
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("calls continue with stream=true and handleStreamRun with --stream", async () => {
+			const mockStream = { fake: "stream" };
+			mockAgentsContinue.mockResolvedValue(mockStream);
+
+			const program = createProgram();
+			await program.parseAsync([
+				"node",
+				"agno-os",
+				"agent",
+				"continue",
+				"a1",
+				"r1",
+				"keep going",
+				"--stream",
+			]);
+
+			expect(mockAgentsContinue).toHaveBeenCalledWith("a1", "r1", {
+				tools: "keep going",
+				sessionId: undefined,
+				userId: undefined,
+				stream: true,
+			});
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent");
+		});
+
+		it("outputs JSON in json mode for non-streaming continue", async () => {
+			const result = { content: "continued", run_id: "r1" };
+			mockAgentsContinue.mockResolvedValue(result);
+			vi.mocked(getOutputFormat).mockReturnValue("json");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "msg"]);
+
+			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
+			const parsed = JSON.parse(written);
+			expect(parsed.content).toBe("continued");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("handles continue errors with handleError", async () => {
+			const error = new Error("continue failed");
+			mockAgentsContinue.mockRejectedValue(error);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "msg"]);
+
+			expect(mockHandleError).toHaveBeenCalledWith(error);
+		});
+	});
+
+	describe("agent cancel", () => {
+		it("calls client.agents.cancel and prints success", async () => {
+			mockAgentsCancel.mockResolvedValue(undefined);
+			const { writeSuccess } = await import("../../src/lib/output.js");
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "cancel", "a1", "r1"]);
+
+			expect(mockAgentsCancel).toHaveBeenCalledWith("a1", "r1");
+			expect(writeSuccess).toHaveBeenCalledWith("Cancelled run r1 for agent a1");
+		});
+
+		it("handles cancel errors with handleError", async () => {
+			const error = new Error("cancel failed");
+			mockAgentsCancel.mockRejectedValue(error);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno-os", "agent", "cancel", "a1", "r1"]);
+
+			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
 	});
 });
