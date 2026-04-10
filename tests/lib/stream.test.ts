@@ -79,9 +79,13 @@ describe("stream renderer", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Re-setup ora mock chain since restoreMocks clears mockReturnValue
+		mockOraInstance.start.mockReturnValue(mockOraInstance);
 		stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 		stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 		mockGetOutputFormat.mockReturnValue("table");
+		// Reset exitCode between tests
+		process.exitCode = undefined;
 	});
 
 	describe("handleStreamRun", () => {
