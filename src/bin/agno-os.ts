@@ -72,6 +72,15 @@ program.addCommand(sessionCommand);
 const { memoryCommand } = await import("../commands/memories.js");
 program.addCommand(memoryCommand);
 
+const { knowledgeCommand } = await import("../commands/knowledge.js");
+program.addCommand(knowledgeCommand);
+
+const { traceCommand } = await import("../commands/traces.js");
+program.addCommand(traceCommand);
+
+const { evalCommand } = await import("../commands/evals.js");
+program.addCommand(evalCommand);
+
 // Error handling for Commander parse failures
 program.exitOverride();
 try {
