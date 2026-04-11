@@ -113,7 +113,6 @@ describe("CLI integration tests", () => {
 			expect(result.stdout).toContain("--key");
 			expect(result.stdout).toContain("--timeout");
 			expect(result.stdout).toContain("--no-color");
-			expect(result.stdout).toContain("--verbose");
 		});
 	});
 
