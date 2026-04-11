@@ -107,8 +107,8 @@ sessionCommand
 sessionCommand
 	.command("create")
 	.description("Create a new session")
-	.requiredOption("--type <type>", "Session type (agent, team, workflow)")
-	.requiredOption("--component-id <id>", "Component ID")
+	.requiredOption("--type <type>", "Session type: agent, team, workflow (required)")
+	.requiredOption("--component-id <id>", "Component ID (required)")
 	.option("--name <name>", "Session name")
 	.option("--user-id <id>", "User ID")
 	.option("--db-id <id>", "Database ID")
@@ -225,8 +225,8 @@ sessionCommand
 sessionCommand
 	.command("delete-all")
 	.description("Delete multiple sessions")
-	.requiredOption("--ids <ids>", "Comma-separated session IDs")
-	.requiredOption("--types <types>", "Comma-separated session types (must match IDs)")
+	.requiredOption("--ids <ids>", "Comma-separated session IDs (required)")
+	.requiredOption("--types <types>", "Comma-separated session types, must match IDs (required)")
 	.option("--user-id <id>", "User ID")
 	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {

@@ -95,8 +95,8 @@ componentCommand
 componentCommand
 	.command("create")
 	.description("Create a component")
-	.requiredOption("--name <name>", "Component name")
-	.requiredOption("--type <type>", "Component type (agent, team, workflow)")
+	.requiredOption("--name <name>", "Component name (required)")
+	.requiredOption("--type <type>", "Component type: agent, team, workflow (required)")
 	.option("--description <desc>", "Component description")
 	.option("--config <json>", "Configuration as JSON")
 	.option("--stage <stage>", "Stage (draft, published)")
@@ -270,7 +270,7 @@ configSubCommand
 	.command("create")
 	.argument("<component_id>", "Component ID")
 	.description("Create a component configuration")
-	.requiredOption("--config <json>", "Configuration as JSON")
+	.requiredOption("--config <json>", "Configuration as JSON (required)")
 	.action(async (componentId: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -317,7 +317,7 @@ configSubCommand
 	.argument("<component_id>", "Component ID")
 	.argument("<version>", "Configuration version number")
 	.description("Update a draft component configuration")
-	.requiredOption("--config <json>", "Configuration as JSON")
+	.requiredOption("--config <json>", "Configuration as JSON (required)")
 	.action(async (componentId: string, version: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();

@@ -98,7 +98,7 @@ approvalCommand
 	.command("resolve")
 	.argument("<id>", "Approval ID")
 	.description("Resolve an approval")
-	.requiredOption("--status <status>", "Resolution status (e.g., approved, rejected)")
+	.requiredOption("--status <status>", "Resolution status, e.g. approved, rejected (required)")
 	.option("--resolved-by <user>", "Who resolved the approval")
 	.option("--resolution-data <json>", "Additional resolution data as JSON")
 	.action(async (id: string, _options, cmd) => {

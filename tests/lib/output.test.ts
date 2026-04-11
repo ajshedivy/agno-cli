@@ -76,6 +76,26 @@ describe("output module", () => {
 			expect(written).toContain("agent-1");
 			expect(written).toContain("123");
 		});
+
+		it("in table mode with empty data writes 'No items found.' to stderr", async () => {
+			const { outputList } = await import("../../src/lib/output.js");
+			Object.defineProperty(process.stdout, "isTTY", { value: true, writable: true, configurable: true });
+			const cmd = makeCmd({ output: "table" });
+			outputList(cmd, [], { columns: ["Name", "ID"], keys: ["name", "id"] });
+			const stderrWritten = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(stderrWritten).toContain("No items found.");
+			expect(stdoutWrite).not.toHaveBeenCalled();
+		});
+
+		it("in JSON mode with empty data writes valid JSON envelope to stdout", async () => {
+			const { outputList } = await import("../../src/lib/output.js");
+			const cmd = makeCmd({ output: "json" });
+			outputList(cmd, [], { columns: ["Name", "ID"], keys: ["name", "id"] });
+			const written = stdoutWrite.mock.calls.map((c) => c[0]).join("");
+			const parsed = JSON.parse(written);
+			expect(parsed).toHaveProperty("data");
+			expect(parsed.data).toEqual([]);
+		});
 	});
 
 	describe("outputDetail", () => {
@@ -98,6 +118,18 @@ describe("output module", () => {
 			const written = stdoutWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Name");
 			expect(written).toContain("agent-1");
+		});
+
+		it("in JSON mode with --json fields returns only selected fields", async () => {
+			const { outputDetail } = await import("../../src/lib/output.js");
+			const cmd = makeCmd({ output: "json", json: "id,name" });
+			const data = { name: "agent-1", id: "123", description: "test agent", model: "gpt-4" };
+			outputDetail(cmd, data, { labels: [], keys: [] });
+			const written = stdoutWrite.mock.calls.map((c) => c[0]).join("");
+			const parsed = JSON.parse(written);
+			expect(parsed).toEqual({ id: "123", name: "agent-1" });
+			expect(parsed).not.toHaveProperty("description");
+			expect(parsed).not.toHaveProperty("model");
 		});
 	});
 

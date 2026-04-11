@@ -114,7 +114,7 @@ evalCommand
 evalCommand
 	.command("delete")
 	.description("Delete eval runs")
-	.requiredOption("--ids <ids>", "Comma-separated eval run IDs to delete")
+	.requiredOption("--ids <ids>", "Comma-separated eval run IDs to delete (required)")
 	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {
 		try {

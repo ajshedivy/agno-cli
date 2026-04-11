@@ -8,7 +8,7 @@ process.stderr.on("error", (err: NodeJS.ErrnoException) => {
 	throw err;
 });
 
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { handleError } from "../lib/errors.js";
 import { handleNoColorFlag } from "../lib/output.js";
 
@@ -20,17 +20,22 @@ const program = new Command("agno-cli")
 	.version(VERSION, "-V, --version")
 	.description("CLI for interacting with AgentOS instances")
 	.option("-c, --context <name>", "Override active context")
-	.option("-o, --output <format>", "Output format: table, json")
 	.option("--url <url>", "Override base URL")
 	.option("--key <key>", "Override security key")
 	.option("--timeout <seconds>", "Override timeout", Number.parseFloat)
 	.option("--no-color", "Disable color output")
 	.option("-v, --verbose", "Enable verbose output")
-	.option("--json [fields]", "Output JSON with optional field selection (e.g., --json id,name)");
+	.option("--json [fields]", "Output JSON with optional field selection (e.g., --json id,name)")
+	.addOption(new Option("-o, --output <format>", "Output format").choices(["json", "table"]));
 
-// Pre-action hook: bridge --no-color flag to chalk
+// Pre-action hook: bridge --no-color flag to chalk + validate option conflicts
 program.hook("preAction", (thisCommand) => {
 	handleNoColorFlag(thisCommand);
+	const globals = thisCommand.optsWithGlobals();
+	if (globals.output === "table" && globals.json !== undefined) {
+		process.stderr.write("Error: --output table and --json cannot be used together.\n");
+		process.exit(1);
+	}
 });
 
 // Help examples on root command

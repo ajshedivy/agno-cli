@@ -81,7 +81,7 @@ keyCommand
 keyCommand
 	.command("create")
 	.description("Create a new API key")
-	.requiredOption("--name <name>", "Key name")
+	.requiredOption("--name <name>", "Key name (required)")
 	.option("--scopes <scopes>", "Comma-separated scopes")
 	.option("--expires-at <date>", "Expiration date (ISO 8601)")
 	.action(async (_options, cmd) => {
@@ -245,11 +245,11 @@ connectionCommand
 connectionCommand
 	.command("create")
 	.description("Create a new connection")
-	.requiredOption("--name <name>", "Connection name")
-	.requiredOption("--host <host>", "Hostname or IP")
-	.requiredOption("--port <port>", "Port number")
-	.requiredOption("--user <user>", "Username")
-	.requiredOption("--password <password>", "Password")
+	.requiredOption("--name <name>", "Connection name (required)")
+	.requiredOption("--host <host>", "Hostname or IP (required)")
+	.requiredOption("--port <port>", "Port number (required)")
+	.requiredOption("--user <user>", "Username (required)")
+	.requiredOption("--password <password>", "Password (required)")
 	.option("--is-default", "Set as default connection")
 	.action(async (_options, cmd) => {
 		try {

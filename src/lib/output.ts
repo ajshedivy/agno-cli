@@ -84,6 +84,12 @@ export function outputList(
 		return;
 	}
 
+	// Table mode: show message for empty results
+	if (data.length === 0) {
+		process.stderr.write("No items found.\n");
+		return;
+	}
+
 	const colWidths = calculateColWidths(opts.columns.length);
 	const table = new Table({
 		head: opts.columns.map((c) => chalk.bold(c)),

@@ -117,7 +117,7 @@ memoryCommand
 memoryCommand
 	.command("create")
 	.description("Create a new memory")
-	.requiredOption("--memory <content>", "Memory content")
+	.requiredOption("--memory <content>", "Memory content (required)")
 	.option("--topics <topics>", "Comma-separated topics")
 	.option("--user-id <id>", "User ID")
 	.option("--db-id <id>", "Database ID")
@@ -210,7 +210,7 @@ memoryCommand
 memoryCommand
 	.command("delete-all")
 	.description("Delete multiple memories")
-	.requiredOption("--ids <ids>", "Comma-separated memory IDs")
+	.requiredOption("--ids <ids>", "Comma-separated memory IDs (required)")
 	.option("--user-id <id>", "User ID")
 	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {
