@@ -144,7 +144,11 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello"]);
 
-			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
+			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.any(Function),
+				{ resourceType: "workflow", resourceId: "w1" },
+			);
 			expect(mockWorkflowsRunStream).not.toHaveBeenCalled();
 		});
 
@@ -152,7 +156,7 @@ describe("workflow command", () => {
 			const runResult = { content: "Response", metrics: {} };
 			mockWorkflowsRun.mockResolvedValue(runResult);
 
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -178,11 +182,11 @@ describe("workflow command", () => {
 				sessionId: undefined,
 				userId: undefined,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "workflow");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "workflow", { resourceId: "w1" });
 		});
 
 		it("passes --session-id and --user-id to run", async () => {
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -275,7 +279,7 @@ describe("workflow command", () => {
 				userId: undefined,
 				stream: true,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "workflow");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "workflow", { resourceId: "w1" });
 		});
 
 		it("outputs JSON in json mode for non-streaming continue", async () => {

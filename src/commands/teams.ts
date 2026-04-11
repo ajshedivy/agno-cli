@@ -101,14 +101,17 @@ teamCommand
 					sessionId: options.sessionId,
 					userId: options.userId,
 				});
-				await handleStreamRun(cmd, stream, "team");
+				await handleStreamRun(cmd, stream, "team", { resourceId: teamId });
 			} else {
-				await handleNonStreamRun(cmd, () =>
-					client.teams.run(teamId, {
-						message,
-						sessionId: options.sessionId,
-						userId: options.userId,
-					}),
+				await handleNonStreamRun(
+					cmd,
+					() =>
+						client.teams.run(teamId, {
+							message,
+							sessionId: options.sessionId,
+							userId: options.userId,
+						}),
+					{ resourceType: "team", resourceId: teamId },
 				);
 			}
 		} catch (err) {
@@ -135,7 +138,7 @@ teamCommand
 					userId: options.userId,
 					stream: true,
 				});
-				await handleStreamRun(cmd, stream as AgentStream, "team");
+				await handleStreamRun(cmd, stream as AgentStream, "team", { resourceId: teamId });
 			} else {
 				const result = await client.teams.continue(teamId, runId, {
 					tools: message,

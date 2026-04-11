@@ -98,14 +98,17 @@ workflowCommand
 					sessionId: options.sessionId,
 					userId: options.userId,
 				});
-				await handleStreamRun(cmd, stream, "workflow");
+				await handleStreamRun(cmd, stream, "workflow", { resourceId: workflowId });
 			} else {
-				await handleNonStreamRun(cmd, () =>
-					client.workflows.run(workflowId, {
-						message,
-						sessionId: options.sessionId,
-						userId: options.userId,
-					}),
+				await handleNonStreamRun(
+					cmd,
+					() =>
+						client.workflows.run(workflowId, {
+							message,
+							sessionId: options.sessionId,
+							userId: options.userId,
+						}),
+					{ resourceType: "workflow", resourceId: workflowId },
 				);
 			}
 		} catch (err) {
@@ -132,7 +135,7 @@ workflowCommand
 					userId: options.userId,
 					stream: true,
 				});
-				await handleStreamRun(cmd, stream as AgentStream, "workflow");
+				await handleStreamRun(cmd, stream as AgentStream, "workflow", { resourceId: workflowId });
 			} else {
 				const result = await client.workflows.continue(workflowId, runId, {
 					tools: message,

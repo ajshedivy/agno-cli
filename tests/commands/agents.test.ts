@@ -194,7 +194,11 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello"]);
 
-			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
+			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.any(Function),
+				{ resourceType: "agent", resourceId: "a1" },
+			);
 			expect(mockAgentsRunStream).not.toHaveBeenCalled();
 		});
 
@@ -203,7 +207,7 @@ describe("agent command", () => {
 			mockAgentsRun.mockResolvedValue(runResult);
 
 			// Capture the runFn and call it to verify it delegates correctly
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -229,11 +233,11 @@ describe("agent command", () => {
 				sessionId: undefined,
 				userId: undefined,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent", { resourceId: "a1" });
 		});
 
 		it("passes --session-id and --user-id to run", async () => {
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -335,7 +339,7 @@ describe("agent command", () => {
 				userId: undefined,
 				stream: true,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "agent", { resourceId: "a1" });
 		});
 
 		it("outputs JSON in json mode for non-streaming continue", async () => {

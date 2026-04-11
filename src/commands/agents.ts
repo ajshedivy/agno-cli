@@ -99,14 +99,17 @@ agentCommand
 					sessionId: options.sessionId,
 					userId: options.userId,
 				});
-				await handleStreamRun(cmd, stream, "agent");
+				await handleStreamRun(cmd, stream, "agent", { resourceId: agentId });
 			} else {
-				await handleNonStreamRun(cmd, () =>
-					client.agents.run(agentId, {
-						message,
-						sessionId: options.sessionId,
-						userId: options.userId,
-					}),
+				await handleNonStreamRun(
+					cmd,
+					() =>
+						client.agents.run(agentId, {
+							message,
+							sessionId: options.sessionId,
+							userId: options.userId,
+						}),
+					{ resourceType: "agent", resourceId: agentId },
 				);
 			}
 		} catch (err) {
@@ -133,7 +136,7 @@ agentCommand
 					userId: options.userId,
 					stream: true,
 				});
-				await handleStreamRun(cmd, stream as AgentStream, "agent");
+				await handleStreamRun(cmd, stream as AgentStream, "agent", { resourceId: agentId });
 			} else {
 				const result = await client.agents.continue(agentId, runId, {
 					tools: toolResults,

@@ -143,7 +143,11 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello"]);
 
-			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
+			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.any(Function),
+				{ resourceType: "team", resourceId: "t1" },
+			);
 			expect(mockTeamsRunStream).not.toHaveBeenCalled();
 		});
 
@@ -151,7 +155,7 @@ describe("team command", () => {
 			const runResult = { content: "Response", metrics: {} };
 			mockTeamsRun.mockResolvedValue(runResult);
 
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -177,11 +181,11 @@ describe("team command", () => {
 				sessionId: undefined,
 				userId: undefined,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "team");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "team", { resourceId: "t1" });
 		});
 
 		it("passes --session-id and --user-id to run", async () => {
-			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>) => {
+			mockHandleNonStreamRun.mockImplementation(async (_cmd: unknown, runFn: () => Promise<unknown>, _opts?: unknown) => {
 				await runFn();
 			});
 
@@ -274,7 +278,7 @@ describe("team command", () => {
 				userId: undefined,
 				stream: true,
 			});
-			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "team");
+			expect(mockHandleStreamRun).toHaveBeenCalledWith(expect.anything(), mockStream, "team", { resourceId: "t1" });
 		});
 
 		it("outputs JSON in json mode for non-streaming continue", async () => {
