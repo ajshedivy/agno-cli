@@ -17,6 +17,7 @@ knowledgeCommand
 	.option("--name <name>", "Content name")
 	.option("--description <desc>", "Content description")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (filePath: string | undefined, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -38,6 +39,7 @@ knowledgeCommand
 				name: opts.name,
 				description: opts.description,
 				dbId: opts.dbId,
+				knowledgeId: opts.knowledgeId,
 			};
 
 			if (filePath) {
@@ -88,6 +90,7 @@ knowledgeCommand
 	.option("--sort-by <field>", "Sort field")
 	.option("--sort-order <order>", "Sort order (asc, desc)")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -98,6 +101,7 @@ knowledgeCommand
 				sortBy: opts.sortBy,
 				sortOrder: opts.sortOrder,
 				dbId: opts.dbId,
+				knowledgeId: opts.knowledgeId,
 			});
 
 			const r = result as unknown as Record<string, unknown>;
@@ -136,11 +140,12 @@ knowledgeCommand
 	.argument("<content_id>", "Content ID")
 	.description("Get knowledge content details")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (contentId: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const result = await client.knowledge.get(contentId, opts.dbId);
+			const result = await client.knowledge.get(contentId, { dbId: opts.dbId, knowledgeId: opts.knowledgeId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
@@ -182,6 +187,7 @@ knowledgeCommand
 	.option("--limit <n>", "Results per page", (v: string) => Number.parseInt(v, 10), 20)
 	.option("--page <n>", "Page number", (v: string) => Number.parseInt(v, 10), 1)
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (query: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -190,6 +196,7 @@ knowledgeCommand
 				searchType: opts.searchType,
 				maxResults: opts.maxResults,
 				dbId: opts.dbId,
+				knowledgeId: opts.knowledgeId,
 				page: opts.page,
 				limit: opts.limit,
 			});
@@ -233,11 +240,12 @@ knowledgeCommand
 	.argument("<content_id>", "Content ID")
 	.description("Get knowledge content processing status")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (contentId: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const result = await client.knowledge.getStatus(contentId, opts.dbId);
+			const result = await client.knowledge.getStatus(contentId, { dbId: opts.dbId, knowledgeId: opts.knowledgeId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
@@ -271,11 +279,12 @@ knowledgeCommand
 	.argument("<content_id>", "Content ID")
 	.description("Delete knowledge content")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (contentId: string, _options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			await client.knowledge.delete(contentId, opts.dbId);
+			await client.knowledge.delete(contentId, { dbId: opts.dbId, knowledgeId: opts.knowledgeId });
 			writeSuccess("Knowledge content deleted.");
 		} catch (err) {
 			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
@@ -288,11 +297,12 @@ knowledgeCommand
 	.command("delete-all")
 	.description("Delete all knowledge content")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			await client.knowledge.deleteAll(opts.dbId);
+			await client.knowledge.deleteAll({ dbId: opts.dbId, knowledgeId: opts.knowledgeId });
 			writeSuccess("All knowledge content deleted.");
 		} catch (err) {
 			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
@@ -305,11 +315,12 @@ knowledgeCommand
 	.command("config")
 	.description("Get knowledge base configuration")
 	.option("--db-id <id>", "Database ID")
+	.option("--knowledge-id <id>", "Knowledge base ID")
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const result = await client.knowledge.getConfig(opts.dbId);
+			const result = await client.knowledge.getConfig({ dbId: opts.dbId, knowledgeId: opts.knowledgeId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {

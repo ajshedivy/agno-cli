@@ -82,6 +82,18 @@ describe("knowledge command", () => {
 			);
 		});
 
+		it("passes --knowledge-id to SDK list call", async () => {
+			mockKnowledgeList.mockResolvedValue({
+				data: [],
+				meta: { page: 1, limit: 20, total_pages: 0, total_count: 0 },
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "knowledge", "list", "--knowledge-id", "kb1"]);
+
+			expect(mockKnowledgeList).toHaveBeenCalledWith(expect.objectContaining({ knowledgeId: "kb1" }));
+		});
+
 		it("outputs JSON with data and meta in json mode", async () => {
 			mockKnowledgeList.mockResolvedValue({
 				data: [{ id: "k1", name: "test" }],
@@ -114,7 +126,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "knowledge", "get", "k1"]);
 
-			expect(mockKnowledgeGet).toHaveBeenCalledWith("k1", undefined);
+			expect(mockKnowledgeGet).toHaveBeenCalledWith("k1", { dbId: undefined, knowledgeId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.objectContaining({ id: "k1", name: "test doc", content: "some content" }),
@@ -161,6 +173,18 @@ describe("knowledge command", () => {
 				"test",
 				expect.objectContaining({ searchType: "keyword", maxResults: 5 }),
 			);
+		});
+
+		it("passes --knowledge-id to SDK search call", async () => {
+			mockKnowledgeSearch.mockResolvedValue({
+				data: [],
+				meta: { page: 1, limit: 20, total_pages: 0, total_count: 0 },
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "knowledge", "search", "test query", "--knowledge-id", "kb1"]);
+
+			expect(mockKnowledgeSearch).toHaveBeenCalledWith("test query", expect.objectContaining({ knowledgeId: "kb1" }));
 		});
 
 		it("truncates content longer than 80 chars in table output", async () => {
@@ -213,7 +237,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "knowledge", "status", "k1"]);
 
-			expect(mockKnowledgeGetStatus).toHaveBeenCalledWith("k1", undefined);
+			expect(mockKnowledgeGetStatus).toHaveBeenCalledWith("k1", { dbId: undefined, knowledgeId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.objectContaining({ content_id: "k1", status: "ready" }),
@@ -231,7 +255,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "knowledge", "delete", "k1"]);
 
-			expect(mockKnowledgeDelete).toHaveBeenCalledWith("k1", undefined);
+			expect(mockKnowledgeDelete).toHaveBeenCalledWith("k1", { dbId: undefined, knowledgeId: undefined });
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Knowledge content deleted.");
 		});
 	});
@@ -243,7 +267,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "knowledge", "delete-all"]);
 
-			expect(mockKnowledgeDeleteAll).toHaveBeenCalledWith(undefined);
+			expect(mockKnowledgeDeleteAll).toHaveBeenCalledWith({ dbId: undefined, knowledgeId: undefined });
 			expect(mockWriteSuccess).toHaveBeenCalledWith("All knowledge content deleted.");
 		});
 	});
@@ -259,7 +283,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "knowledge", "config"]);
 
-			expect(mockKnowledgeGetConfig).toHaveBeenCalledWith(undefined);
+			expect(mockKnowledgeGetConfig).toHaveBeenCalledWith({ dbId: undefined, knowledgeId: undefined });
 		});
 
 		it("outputs JSON in json mode", async () => {
