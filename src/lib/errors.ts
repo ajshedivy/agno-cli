@@ -21,7 +21,16 @@ export class ConfigError extends Error {
 }
 
 /**
- * Check if an error is a network connection error.
+ * Optional context for error messages. Provides resource type for 404s
+ * and server URL for connection errors.
+ */
+export interface ErrorContext {
+	resource?: string;
+	url?: string;
+}
+
+/**
+ * Check if an error is a network connection error (native Node.js errors).
  */
 function isConnectionError(err: unknown): boolean {
 	if (!(err instanceof Error)) return false;
@@ -29,6 +38,34 @@ function isConnectionError(err: unknown): boolean {
 	if (code === "ECONNREFUSED" || code === "ECONNRESET" || code === "ENOTFOUND") return true;
 	if (err.message.includes("fetch failed")) return true;
 	return false;
+}
+
+/**
+ * Check if an error is a network APIError (SDK wraps TypeError as APIError(0, "Network error: ...")).
+ */
+function isNetworkAPIError(err: unknown): boolean {
+	return err instanceof APIError && err.status === 0 && err.message.includes("Network error");
+}
+
+/**
+ * Parse a 422 validation error message into a human-readable bullet list.
+ * Handles FastAPI-style detail arrays: { detail: [{ loc: ["body", "name"], msg: "..." }] }
+ * Falls back to raw message if not JSON or unexpected shape.
+ */
+function formatValidationError(message: string): string {
+	try {
+		const parsed = JSON.parse(message);
+		if (parsed && Array.isArray(parsed.detail)) {
+			const lines = parsed.detail.map((d: { loc?: string[]; msg?: string }) => {
+				const field = d.loc?.slice(1).join(".") ?? "unknown";
+				return `  - ${field}: ${d.msg ?? "invalid"}`;
+			});
+			return `Validation error:\n${lines.join("\n")}`;
+		}
+	} catch {
+		/* not JSON, fall through */
+	}
+	return `Validation error: ${message}`;
 }
 
 /**
@@ -45,28 +82,42 @@ function writeErr(msg: string): void {
  * Sets appropriate exit codes: 1 for user errors, 2 for system errors.
  *
  * Must be called in catch blocks of all command handlers.
+ * Optional ctx parameter provides resource type for 404s and server URL for connection errors.
  */
-export function handleError(err: unknown): never {
+export function handleError(err: unknown, ctx?: ErrorContext): never {
 	if (err instanceof AuthenticationError) {
 		writeErr("Authentication failed. Check your API key: agno-cli config show");
 		process.exitCode = 1;
 	} else if (err instanceof NotFoundError) {
-		writeErr("Not found. Run agno-cli <resource> list to see available items.");
+		const what = ctx?.resource ?? "Resource";
+		writeErr(`${what} not found.`);
 		process.exitCode = 1;
 	} else if (err instanceof BadRequestError) {
 		writeErr(`Invalid request: ${err.message}`);
 		process.exitCode = 1;
 	} else if (err instanceof UnprocessableEntityError) {
-		writeErr(`Validation error: ${err.message}`);
+		writeErr(formatValidationError(err.message));
 		process.exitCode = 1;
 	} else if (err instanceof RateLimitError) {
 		writeErr("Rate limited. Wait and retry.");
 		process.exitCode = 2;
 	} else if (err instanceof InternalServerError) {
-		writeErr(`Server error: ${err.message}`);
+		writeErr(`Server error: ${err.message}\nRun \`agno-cli status\` for diagnostics.`);
 		process.exitCode = 2;
 	} else if (err instanceof RemoteServerUnavailableError) {
 		writeErr("Server unavailable. Is AgentOS running?");
+		process.exitCode = 2;
+	} else if (err instanceof APIError && err.status === 403) {
+		const isAdmin = err.message.toLowerCase().includes("admin");
+		if (isAdmin) {
+			writeErr("This operation requires admin scope. Check your API key permissions.");
+		} else {
+			writeErr("Access denied. Check your API key permissions.");
+		}
+		process.exitCode = 1;
+	} else if (isConnectionError(err) || isNetworkAPIError(err)) {
+		const target = ctx?.url ? ` to ${ctx.url}` : "";
+		writeErr(`Cannot connect${target} -- is the server running?`);
 		process.exitCode = 2;
 	} else if (err instanceof APIError) {
 		writeErr(`API error (${err.status}): ${err.message}`);
@@ -74,9 +125,6 @@ export function handleError(err: unknown): never {
 	} else if (err instanceof ConfigError) {
 		writeErr(err.message);
 		process.exitCode = 1;
-	} else if (isConnectionError(err)) {
-		writeErr("Cannot connect to server. Is AgentOS running?");
-		process.exitCode = 2;
 	} else {
 		writeErr(err instanceof Error ? err.message : String(err));
 		process.exitCode = 2;

@@ -43,8 +43,25 @@ describe("errors module", () => {
 			const err = new NotFoundError("Agent not found");
 			handleError(err);
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
-			expect(written).toContain("Not found");
-			expect(written).toContain("agno");
+			expect(written).toContain("not found");
+			expect(process.exitCode).toBe(1);
+		});
+
+		it("maps NotFoundError with resource context to include resource type", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new NotFoundError("Not found");
+			handleError(err, { resource: "Agent" });
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Agent not found");
+			expect(process.exitCode).toBe(1);
+		});
+
+		it("maps NotFoundError without context to 'Resource not found' (backward compat)", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new NotFoundError("Not found");
+			handleError(err);
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Resource not found");
 			expect(process.exitCode).toBe(1);
 		});
 
@@ -68,6 +85,32 @@ describe("errors module", () => {
 			expect(process.exitCode).toBe(1);
 		});
 
+		it("maps UnprocessableEntityError with JSON detail array to parsed bullet list", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const detail = JSON.stringify({
+				detail: [
+					{ loc: ["body", "name"], msg: "field required" },
+					{ loc: ["body", "description"], msg: "too long" },
+				],
+			});
+			const err = new UnprocessableEntityError(detail);
+			handleError(err);
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Validation error:");
+			expect(written).toContain("  - name: field required");
+			expect(written).toContain("  - description: too long");
+			expect(process.exitCode).toBe(1);
+		});
+
+		it("maps UnprocessableEntityError with plain text to fallback format", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new UnprocessableEntityError("plain text error");
+			handleError(err);
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Validation error: plain text error");
+			expect(process.exitCode).toBe(1);
+		});
+
 		it("maps RateLimitError to 'Rate limited' on stderr with exitCode=2", async () => {
 			const { handleError } = await import("../../src/lib/errors.js");
 			const err = new RateLimitError("Too many requests");
@@ -77,13 +120,14 @@ describe("errors module", () => {
 			expect(process.exitCode).toBe(2);
 		});
 
-		it("maps InternalServerError to 'Server error:' on stderr with exitCode=2", async () => {
+		it("maps InternalServerError to 'Server error:' with agno-cli status suggestion on stderr with exitCode=2", async () => {
 			const { handleError } = await import("../../src/lib/errors.js");
-			const err = new InternalServerError("Internal failure");
+			const err = new InternalServerError("db crash");
 			handleError(err);
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Server error:");
-			expect(written).toContain("Internal failure");
+			expect(written).toContain("db crash");
+			expect(written).toContain("agno-cli status");
 			expect(process.exitCode).toBe(2);
 		});
 
@@ -94,6 +138,26 @@ describe("errors module", () => {
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Server unavailable");
 			expect(process.exitCode).toBe(2);
+		});
+
+		it("maps APIError 403 with 'admin' in message to admin scope message", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new APIError(403, "admin scope required");
+			handleError(err);
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("admin scope");
+			expect(written).toContain("API key permissions");
+			expect(process.exitCode).toBe(1);
+		});
+
+		it("maps APIError 403 without 'admin' to generic access denied message", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new APIError(403, "unauthorized");
+			handleError(err);
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Access denied");
+			expect(written).toContain("API key permissions");
+			expect(process.exitCode).toBe(1);
 		});
 
 		it("maps generic APIError with status >= 500 to exitCode=2, else exitCode=1", async () => {
@@ -107,9 +171,9 @@ describe("errors module", () => {
 			// Reset
 			process.exitCode = undefined;
 
-			// 4xx -> exitCode=1
-			const err403 = new APIError(403, "Forbidden");
-			handleError(err403);
+			// 418 -> exitCode=1 (not 403, so falls through to generic)
+			const err418 = new APIError(418, "I'm a teapot");
+			handleError(err418);
 			expect(process.exitCode).toBe(1);
 		});
 
@@ -120,6 +184,27 @@ describe("errors module", () => {
 			handleError(err);
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Cannot connect");
+			expect(process.exitCode).toBe(2);
+		});
+
+		it("maps ECONNREFUSED with URL context to include server URL", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new Error("connect ECONNREFUSED 127.0.0.1:8080");
+			(err as NodeJS.ErrnoException).code = "ECONNREFUSED";
+			handleError(err, { url: "http://localhost:8000" });
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Cannot connect");
+			expect(written).toContain("http://localhost:8000");
+			expect(process.exitCode).toBe(2);
+		});
+
+		it("maps APIError with status=0 and 'Network error' to connection error with URL context", async () => {
+			const { handleError } = await import("../../src/lib/errors.js");
+			const err = new APIError(0, "Network error: fetch failed");
+			handleError(err, { url: "http://localhost:8000" });
+			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
+			expect(written).toContain("Cannot connect");
+			expect(written).toContain("http://localhost:8000");
 			expect(process.exitCode).toBe(2);
 		});
 
