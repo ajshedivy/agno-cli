@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 import pkg from "./package.json" with { type: "json" };
 
 export default defineConfig({
-	entry: ["src/bin/agno-os.ts"],
+	entry: ["src/bin/agno.ts"],
 	outDir: "dist/bin",
 	format: ["esm"],
 	target: "node20",

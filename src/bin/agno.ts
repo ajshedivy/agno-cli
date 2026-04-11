@@ -16,7 +16,7 @@ import { handleNoColorFlag } from "../lib/output.js";
 // During dev (tsx), process.env.CLI_VERSION won't be replaced, so fall back to "dev".
 const VERSION = process.env.CLI_VERSION ?? "dev";
 
-const program = new Command("agno-os")
+const program = new Command("agno-cli")
 	.version(VERSION, "-V, --version")
 	.description("CLI for interacting with AgentOS instances")
 	.option("-c, --context <name>", "Override active context")
@@ -38,10 +38,10 @@ program.addHelpText(
 	"after",
 	`
 Examples:
-  $ agno-os config init --url http://localhost:7777
-  $ agno-os config show
-  $ agno-os agent list --output json
-  $ agno-os agent run my-agent "Hello" --stream
+  $ agno-cli config init --url http://localhost:7777
+  $ agno-cli config show
+  $ agno-cli agent list --output json
+  $ agno-cli agent run my-agent "Hello" --stream
 `,
 );
 

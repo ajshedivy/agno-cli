@@ -197,7 +197,7 @@ export function resolveContext(overrides: ResolveContextOptions): ContextConfig 
 	const name = overrides.contextName ?? process.env.AGNO_CONTEXT ?? config.current_context;
 	const ctx = config.contexts[name];
 	if (!ctx) {
-		throw new ConfigError(`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`);
+		throw new ConfigError(`Context '${name}' not found. Run 'agno-cli config list' to see available contexts.`);
 	}
 
 	// Layer overrides: CLI flags > env vars > context values

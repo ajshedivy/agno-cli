@@ -33,7 +33,7 @@ describe("errors module", () => {
 			handleError(err);
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Authentication failed");
-			expect(written).toContain("agno-os config show");
+			expect(written).toContain("agno-cli config show");
 			expect(process.exitCode).toBe(1);
 			expect(exitSpy).toHaveBeenCalled();
 		});
@@ -44,7 +44,7 @@ describe("errors module", () => {
 			handleError(err);
 			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Not found");
-			expect(written).toContain("agno-os");
+			expect(written).toContain("agno");
 			expect(process.exitCode).toBe(1);
 		});
 

@@ -48,10 +48,10 @@ function writeErr(msg: string): void {
  */
 export function handleError(err: unknown): never {
 	if (err instanceof AuthenticationError) {
-		writeErr("Authentication failed. Check your API key: agno-os config show");
+		writeErr("Authentication failed. Check your API key: agno-cli config show");
 		process.exitCode = 1;
 	} else if (err instanceof NotFoundError) {
-		writeErr("Not found. Run agno-os <resource> list to see available items.");
+		writeErr("Not found. Run agno-cli <resource> list to see available items.");
 		process.exitCode = 1;
 	} else if (err instanceof BadRequestError) {
 		writeErr(`Invalid request: ${err.message}`);

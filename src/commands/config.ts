@@ -84,7 +84,7 @@ configCommand
 		const config = loadConfig();
 
 		if (!config.contexts[name]) {
-			writeError(`Context '${name}' not found. Run 'agno-os config list' to see available contexts.`);
+			writeError(`Context '${name}' not found. Run 'agno-cli config list' to see available contexts.`);
 			process.exitCode = 1;
 			return;
 		}
@@ -213,7 +213,7 @@ configCommand
 
 		if (name === config.current_context) {
 			writeError(
-				`Cannot remove active context '${name}'. Switch to another context first with 'agno-os config use <name>'.`,
+				`Cannot remove active context '${name}'. Switch to another context first with 'agno-cli config use <name>'.`,
 			);
 			process.exitCode = 1;
 			return;

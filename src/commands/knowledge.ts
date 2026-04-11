@@ -72,7 +72,7 @@ knowledgeCommand
 					},
 				);
 			}
-			process.stderr.write(`Check status: agno-os knowledge status ${result.id}\n`);
+			process.stderr.write(`Check status: agno-cli knowledge status ${result.id}\n`);
 		} catch (err) {
 			handleError(err);
 		}

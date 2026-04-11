@@ -1,10 +1,10 @@
 {
-	"name": "agno-os",
+	"name": "agno-cli",
 	"version": "0.1.0",
 	"description": "CLI for interacting with AgentOS instances",
 	"type": "module",
 	"bin": {
-		"agno-os": "./dist/bin/agno-os.js"
+		"agno-cli": "./dist/bin/agno.js"
 	},
 	"files": [
 		"dist"
@@ -14,7 +14,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
-		"dev": "tsx src/bin/agno-os.ts",
+		"dev": "tsx src/bin/agno.ts",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"lint": "biome check .",

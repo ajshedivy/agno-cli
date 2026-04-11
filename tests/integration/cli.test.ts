@@ -18,7 +18,7 @@ interface CliResult {
  */
 function runCli(args: string[], env?: Record<string, string>): CliResult {
 	try {
-		const stdout = execFileSync("npx", ["tsx", "src/bin/agno-os.ts", ...args], {
+		const stdout = execFileSync("npx", ["tsx", "src/bin/agno.ts", ...args], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			env: { ...process.env, ...env },
@@ -44,7 +44,7 @@ function runCli(args: string[], env?: Record<string, string>): CliResult {
  */
 function runBuiltCli(args: string[], env?: Record<string, string>): CliResult {
 	try {
-		const stdout = execFileSync("node", [join(PROJECT_ROOT, "dist/bin/agno-os.js"), ...args], {
+		const stdout = execFileSync("node", [join(PROJECT_ROOT, "dist/bin/agno.js"), ...args], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			env: { ...process.env, ...env },
@@ -93,7 +93,7 @@ describe("CLI integration tests", () => {
 	describe("help", () => {
 		it("shows top-level help with 'config' command listed", () => {
 			const result = runCli(["--help"], { HOME: tempHome });
-			expect(result.stdout).toContain("agno-os");
+			expect(result.stdout).toContain("agno");
 			expect(result.stdout).toContain("config");
 			expect(result.stdout).toContain("Options:");
 			expect(result.exitCode).toBe(0);
@@ -102,7 +102,7 @@ describe("CLI integration tests", () => {
 		it("shows help with examples section", () => {
 			const result = runCli(["--help"], { HOME: tempHome });
 			expect(result.stdout).toContain("Examples:");
-			expect(result.stdout).toContain("agno-os config init");
+			expect(result.stdout).toContain("agno-cli config init");
 		});
 
 		it("shows global options in help", () => {
@@ -250,7 +250,7 @@ describe("CLI integration tests", () => {
 
 	describe("EPIPE handling", () => {
 		it("entry point source contains EPIPE handler as first statement", () => {
-			const source = readFileSync(join(PROJECT_ROOT, "src/bin/agno-os.ts"), "utf-8");
+			const source = readFileSync(join(PROJECT_ROOT, "src/bin/agno.ts"), "utf-8");
 			const lines = source.split("\n");
 			// Find first non-comment, non-empty line
 			const firstExecutable = lines.find((l) => l.trim() && !l.trim().startsWith("//"));
