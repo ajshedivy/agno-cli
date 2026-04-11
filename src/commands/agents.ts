@@ -1,6 +1,6 @@
 import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
 import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
@@ -44,7 +44,7 @@ agentCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -78,7 +78,7 @@ agentCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Agent", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -110,7 +110,7 @@ agentCommand
 				);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Agent", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -152,7 +152,7 @@ agentCommand
 				}
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Agent", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -167,6 +167,6 @@ agentCommand
 			await client.agents.cancel(agentId, runId);
 			writeSuccess(`Cancelled run ${runId} for agent ${agentId}`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Agent", url: getBaseUrl(cmd) });
 		}
 	});

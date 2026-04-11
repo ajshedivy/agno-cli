@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, printJson } from "../lib/output.js";
 
@@ -35,6 +35,6 @@ export const statusCommand = new Command("status")
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});

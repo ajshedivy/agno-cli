@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeSuccess } from "../lib/output.js";
 
@@ -67,7 +67,7 @@ memoryCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -108,7 +108,7 @@ memoryCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Memory", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -156,7 +156,7 @@ memoryCommand
 			);
 			writeSuccess("Memory created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -183,7 +183,7 @@ memoryCommand
 
 			writeSuccess("Memory updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Memory", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -201,7 +201,7 @@ memoryCommand
 			await client.memories.delete(memoryId, { dbId: opts.dbId });
 			writeSuccess("Memory deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Memory", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -226,7 +226,7 @@ memoryCommand
 			});
 			writeSuccess("Memories deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -266,7 +266,7 @@ memoryCommand
 				printJson(result);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -317,7 +317,7 @@ memoryCommand
 				printJson(result);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -350,6 +350,6 @@ memoryCommand
 			writeSuccess(`Memory optimization ${opts.apply ? "applied" : "previewed"}.`);
 			printJson(result);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
@@ -50,7 +50,7 @@ approvalCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -88,7 +88,7 @@ approvalCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Approval", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -145,6 +145,6 @@ approvalCommand
 			);
 			writeSuccess("Approval resolved.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Approval", url: getBaseUrl(cmd) });
 		}
 	});

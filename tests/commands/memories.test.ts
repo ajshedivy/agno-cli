@@ -12,6 +12,7 @@ const mockMemoriesGetStats = vi.fn();
 const mockMemoriesOptimize = vi.fn();
 
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		memories: {
 			list: mockMemoriesList,
@@ -322,7 +323,7 @@ describe("memory command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "memory", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

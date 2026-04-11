@@ -1,6 +1,6 @@
 import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
 import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
@@ -44,7 +44,7 @@ teamCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -80,7 +80,7 @@ teamCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Team", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -112,7 +112,7 @@ teamCommand
 				);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Team", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -154,7 +154,7 @@ teamCommand
 				}
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Team", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -169,6 +169,6 @@ teamCommand
 			await client.teams.cancel(teamId, runId);
 			writeSuccess(`Cancelled run ${runId} for team ${teamId}`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Team", url: getBaseUrl(cmd) });
 		}
 	});

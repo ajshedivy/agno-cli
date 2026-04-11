@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { writeSuccess } from "../lib/output.js";
 
@@ -22,6 +22,6 @@ databaseCommand
 
 			writeSuccess("Database migration complete.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});

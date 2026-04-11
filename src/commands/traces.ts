@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError } from "../lib/output.js";
 
@@ -58,7 +58,7 @@ traceCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -97,7 +97,7 @@ traceCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Trace", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -159,7 +159,7 @@ traceCommand
 				printJson(result);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -224,6 +224,6 @@ traceCommand
 				printJson(result);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});

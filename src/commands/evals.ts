@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeSuccess } from "../lib/output.js";
 
@@ -64,7 +64,7 @@ evalCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -105,7 +105,7 @@ evalCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Eval", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -125,6 +125,6 @@ evalCommand
 			await client.evals.delete({ ids: parsedIds, dbId: opts.dbId });
 			writeSuccess("Eval runs deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});

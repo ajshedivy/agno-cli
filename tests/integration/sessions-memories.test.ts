@@ -87,7 +87,7 @@ describe("Live integration: sessions and memories (requires AgentOS at localhost
 				expect(parsed).toHaveProperty("session_id");
 			} else {
 				// Session may have been deleted; verify error is handled gracefully
-				expect(result.stderr).toContain("Not found");
+				expect(result.stderr).toContain("not found");
 			}
 		});
 
@@ -194,13 +194,13 @@ describe("Live integration: sessions and memories (requires AgentOS at localhost
 		it("session get with nonexistent ID exits with error", () => {
 			const result = run("session", "get", "nonexistent-session-id", "--db-id", DB_ID);
 			expect(result.exitCode).not.toBe(0);
-			expect(result.stderr).toContain("Not found");
+			expect(result.stderr).toContain("not found");
 		});
 
 		it("memory get with nonexistent ID exits with error", () => {
 			const result = run("memory", "get", "nonexistent-memory-id", "--db-id", DB_ID);
 			expect(result.exitCode).not.toBe(0);
-			expect(result.stderr).toContain("Not found");
+			expect(result.stderr).toContain("not found");
 		});
 	});
 

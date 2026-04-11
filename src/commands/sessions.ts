@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
@@ -58,7 +58,7 @@ sessionCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -98,7 +98,7 @@ sessionCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Session", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -146,7 +146,7 @@ sessionCommand
 			);
 			writeSuccess("Session created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -198,7 +198,7 @@ sessionCommand
 
 			writeSuccess("Session updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Session", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -216,7 +216,7 @@ sessionCommand
 			await client.sessions.delete(sessionId, { dbId: opts.dbId });
 			writeSuccess("Session deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Session", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -244,7 +244,7 @@ sessionCommand
 			});
 			writeSuccess("Sessions deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -276,6 +276,6 @@ sessionCommand
 				keys: ["run_id", "status", "created_at"],
 			});
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Session", url: getBaseUrl(cmd) });
 		}
 	});

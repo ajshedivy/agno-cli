@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
@@ -48,7 +48,7 @@ componentCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -86,7 +86,7 @@ componentCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -146,7 +146,7 @@ componentCommand
 			);
 			writeSuccess("Component created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -208,7 +208,7 @@ componentCommand
 			);
 			writeSuccess("Component updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -224,7 +224,7 @@ componentCommand
 			await client.components.delete(componentId);
 			writeSuccess(`Component ${componentId} deleted.`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -262,7 +262,7 @@ configSubCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -308,7 +308,7 @@ configSubCommand
 			);
 			writeSuccess("Configuration created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -354,7 +354,7 @@ configSubCommand
 			);
 			writeSuccess("Configuration updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Component", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -369,7 +369,7 @@ configSubCommand
 			await client.components.deleteConfigVersion(componentId, Number.parseInt(version, 10));
 			writeSuccess(`Configuration version ${version} deleted.`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 

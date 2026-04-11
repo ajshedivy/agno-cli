@@ -10,6 +10,7 @@ const mockSessionsDeleteAll = vi.fn();
 const mockSessionsGetRuns = vi.fn();
 
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		sessions: {
 			list: mockSessionsList,
@@ -288,7 +289,7 @@ describe("session command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "session", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

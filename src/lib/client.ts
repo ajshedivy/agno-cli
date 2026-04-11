@@ -39,6 +39,20 @@ export function getClient(cmd: Command): AgentOSClient {
 }
 
 /**
+ * Get the resolved base URL for the current CLI context.
+ * Used to provide URL context in error messages (e.g., "Cannot connect to http://localhost:8000").
+ * Calls resolveContext() with the same CLI flag overrides as getClient().
+ */
+export function getBaseUrl(cmd: Command): string {
+	const globals = cmd.optsWithGlobals();
+	const ctx = resolveContext({
+		contextName: globals.context as string | undefined,
+		urlOverride: globals.url as string | undefined,
+	});
+	return ctx.baseUrl;
+}
+
+/**
  * Reset the cached client. Exported for testing.
  */
 export function resetClient(): void {

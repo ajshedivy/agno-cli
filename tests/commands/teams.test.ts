@@ -8,6 +8,7 @@ const mockTeamsRunStream = vi.fn();
 const mockTeamsContinue = vi.fn();
 const mockTeamsCancel = vi.fn();
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		teams: {
 			list: mockTeamsList,
@@ -90,7 +91,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -121,21 +122,19 @@ describe("team command", () => {
 			);
 		});
 
-		it("outputs raw JSON in json mode", async () => {
+		it("routes JSON output through outputDetail for field selection", async () => {
 			const teamData = { id: "t1", name: "Team 1", mode: "route" };
 			mockTeamsGet.mockResolvedValue(teamData);
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
-			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "get", "t1"]);
 
-			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
-			const parsed = JSON.parse(written);
-			expect(parsed.id).toBe("t1");
-
-			stdoutSpy.mockRestore();
+			expect(mockOutputDetail).toHaveBeenCalledWith(
+				expect.anything(),
+				teamData,
+				{ labels: [], keys: [] },
+			);
 		});
 	});
 
@@ -239,7 +238,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -301,7 +300,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "continue", "t1", "r1", "msg"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -324,7 +323,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "team", "cancel", "t1", "r1"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

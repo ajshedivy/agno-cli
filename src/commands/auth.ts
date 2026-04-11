@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeSuccess, writeWarning } from "../lib/output.js";
 
@@ -36,7 +36,7 @@ authCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -74,7 +74,7 @@ keyCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -115,7 +115,7 @@ keyCommand
 				writeWarning("This key will not be shown again.");
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -149,7 +149,7 @@ keyCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -163,7 +163,7 @@ keyCommand
 			await client.auth.keys.revoke(keyId);
 			writeSuccess(`API key ${keyId} revoked.`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -197,7 +197,7 @@ keyCommand
 				writeWarning("This key will not be shown again.");
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -238,7 +238,7 @@ connectionCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -287,7 +287,7 @@ connectionCommand
 			);
 			writeSuccess("Connection created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -323,7 +323,7 @@ connectionCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -375,7 +375,7 @@ connectionCommand
 			);
 			writeSuccess("Connection updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -389,7 +389,7 @@ connectionCommand
 			await client.auth.connections.delete(connId);
 			writeSuccess(`Connection ${connId} deleted.`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -421,7 +421,7 @@ connectionCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 

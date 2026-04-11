@@ -6,6 +6,7 @@ const mockEvalsGet = vi.fn();
 const mockEvalsDelete = vi.fn();
 
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		evals: {
 			list: mockEvalsList,
@@ -160,7 +161,7 @@ describe("eval command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "eval", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

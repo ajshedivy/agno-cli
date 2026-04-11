@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
@@ -49,7 +49,7 @@ scheduleCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -90,7 +90,7 @@ scheduleCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -160,7 +160,7 @@ scheduleCommand
 			);
 			writeSuccess("Schedule created.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -232,7 +232,7 @@ scheduleCommand
 			);
 			writeSuccess("Schedule updated.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -248,7 +248,7 @@ scheduleCommand
 			await client.schedules.delete(id);
 			writeSuccess(`Schedule ${id} deleted.`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -264,7 +264,7 @@ scheduleCommand
 			await client.schedules.disable(id);
 			writeSuccess("Schedule paused.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -280,7 +280,7 @@ scheduleCommand
 			await client.schedules.enable(id);
 			writeSuccess("Schedule resumed.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -320,6 +320,6 @@ scheduleCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Schedule", url: getBaseUrl(cmd) });
 		}
 	});

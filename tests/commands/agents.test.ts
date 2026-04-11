@@ -8,6 +8,7 @@ const mockAgentsRunStream = vi.fn();
 const mockAgentsContinue = vi.fn();
 const mockAgentsCancel = vi.fn();
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		agents: {
 			list: mockAgentsList,
@@ -140,7 +141,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -172,21 +173,19 @@ describe("agent command", () => {
 			);
 		});
 
-		it("outputs raw JSON in json mode", async () => {
+		it("routes JSON output through outputDetail for field selection", async () => {
 			const agentData = { id: "a1", name: "Agent 1", description: "Test" };
 			mockAgentsGet.mockResolvedValue(agentData);
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
-			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "get", "a1"]);
 
-			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
-			const parsed = JSON.parse(written);
-			expect(parsed.id).toBe("a1");
-
-			stdoutSpy.mockRestore();
+			expect(mockOutputDetail).toHaveBeenCalledWith(
+				expect.anything(),
+				agentData,
+				{ labels: [], keys: [] },
+			);
 		});
 	});
 
@@ -291,7 +290,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -362,7 +361,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "msg"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -385,7 +384,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "cancel", "a1", "r1"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

@@ -8,6 +8,7 @@ const mockWorkflowsRunStream = vi.fn();
 const mockWorkflowsContinue = vi.fn();
 const mockWorkflowsCancel = vi.fn();
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		workflows: {
 			list: mockWorkflowsList,
@@ -90,7 +91,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -122,21 +123,19 @@ describe("workflow command", () => {
 			);
 		});
 
-		it("outputs raw JSON in json mode", async () => {
+		it("routes JSON output through outputDetail for field selection", async () => {
 			const wfData = { id: "w1", name: "Workflow 1", description: "Test" };
 			mockWorkflowsGet.mockResolvedValue(wfData);
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
-			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "get", "w1"]);
 
-			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
-			const parsed = JSON.parse(written);
-			expect(parsed.id).toBe("w1");
-
-			stdoutSpy.mockRestore();
+			expect(mockOutputDetail).toHaveBeenCalledWith(
+				expect.anything(),
+				wfData,
+				{ labels: [], keys: [] },
+			);
 		});
 	});
 
@@ -240,7 +239,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -302,7 +301,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "continue", "w1", "r1", "msg"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 
@@ -325,7 +324,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "workflow", "cancel", "w1", "r1"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

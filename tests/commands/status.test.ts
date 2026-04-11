@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetConfig = vi.fn();
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({ getConfig: mockGetConfig })),
 }));
 
@@ -99,6 +100,6 @@ describe("status command", () => {
 		const program = createProgram();
 		await program.parseAsync(["node", "agno", "status"]);
 
-		expect(mockHandleError).toHaveBeenCalledWith(error);
+		expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 	});
 });

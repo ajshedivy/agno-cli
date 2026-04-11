@@ -7,6 +7,7 @@ const mockTracesGetStats = vi.fn();
 const mockTracesSearch = vi.fn();
 
 vi.mock("../../src/lib/client.js", () => ({
+	getBaseUrl: vi.fn(() => "http://localhost:8000"),
 	getClient: vi.fn(() => ({
 		traces: {
 			list: mockTracesList,
@@ -111,14 +112,19 @@ describe("trace command", () => {
 			);
 		});
 
-		it("outputs JSON in json mode", async () => {
-			mockTracesGet.mockResolvedValue({ trace_id: "t1" });
+		it("routes JSON output through outputDetail for field selection", async () => {
+			const traceData = { trace_id: "t1" };
+			mockTracesGet.mockResolvedValue(traceData);
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "trace", "get", "t1"]);
 
-			expect(mockPrintJson).toHaveBeenCalledWith(expect.objectContaining({ trace_id: "t1" }));
+			expect(mockOutputDetail).toHaveBeenCalledWith(
+				expect.anything(),
+				traceData,
+				{ labels: [], keys: [] },
+			);
 		});
 	});
 
@@ -188,7 +194,7 @@ describe("trace command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "trace", "list"]);
 
-			expect(mockHandleError).toHaveBeenCalledWith(error);
+			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
 		});
 	});
 });

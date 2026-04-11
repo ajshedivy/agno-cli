@@ -1,6 +1,6 @@
 import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
 import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
@@ -43,7 +43,7 @@ workflowCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -77,7 +77,7 @@ workflowCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Workflow", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -109,7 +109,7 @@ workflowCommand
 				);
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Workflow", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -151,7 +151,7 @@ workflowCommand
 				}
 			}
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Workflow", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -166,6 +166,6 @@ workflowCommand
 			await client.workflows.cancel(workflowId, runId);
 			writeSuccess(`Cancelled run ${runId} for workflow ${workflowId}`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Workflow", url: getBaseUrl(cmd) });
 		}
 	});

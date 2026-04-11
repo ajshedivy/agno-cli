@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { Command } from "commander";
-import { getClient } from "../lib/client.js";
+import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
 import { getOutputFormat, outputDetail, outputList, printJson, writeError, writeSuccess } from "../lib/output.js";
 
@@ -74,7 +74,7 @@ knowledgeCommand
 			}
 			process.stderr.write(`Check status: agno-cli knowledge status ${result.id}\n`);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -125,7 +125,7 @@ knowledgeCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -167,7 +167,7 @@ knowledgeCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -222,7 +222,7 @@ knowledgeCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -260,7 +260,7 @@ knowledgeCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -278,7 +278,7 @@ knowledgeCommand
 			await client.knowledge.delete(contentId, opts.dbId);
 			writeSuccess("Knowledge content deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -295,7 +295,7 @@ knowledgeCommand
 			await client.knowledge.deleteAll(opts.dbId);
 			writeSuccess("All knowledge content deleted.");
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
 
@@ -331,6 +331,6 @@ knowledgeCommand
 				},
 			);
 		} catch (err) {
-			handleError(err);
+			handleError(err, { resource: "Knowledge base", url: getBaseUrl(cmd) });
 		}
 	});
