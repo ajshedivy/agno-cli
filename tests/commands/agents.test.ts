@@ -47,7 +47,7 @@ import { agentCommand } from "../../src/commands/agents.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -69,7 +69,7 @@ describe("agent command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "list"]);
+			await program.parseAsync(["node", "agno", "agent", "list"]);
 
 			expect(mockAgentsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -99,7 +99,7 @@ describe("agent command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "list"]);
+			await program.parseAsync(["node", "agno", "agent", "list"]);
 
 			const callArgs = mockOutputList.mock.calls[0];
 			expect(callArgs[2].meta).toEqual({
@@ -119,7 +119,7 @@ describe("agent command", () => {
 			mockAgentsList.mockResolvedValue(agents);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "list", "--limit", "5", "--page", "2"]);
+			await program.parseAsync(["node", "agno", "agent", "list", "--limit", "5", "--page", "2"]);
 
 			const callArgs = mockOutputList.mock.calls[0];
 			// Page 2 with limit 5 should return items 5-9
@@ -138,7 +138,7 @@ describe("agent command", () => {
 			mockAgentsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "list"]);
+			await program.parseAsync(["node", "agno", "agent", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -154,7 +154,7 @@ describe("agent command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "get", "a1"]);
+			await program.parseAsync(["node", "agno", "agent", "get", "a1"]);
 
 			expect(mockAgentsGet).toHaveBeenCalledWith("a1");
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -180,7 +180,7 @@ describe("agent command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "get", "a1"]);
+			await program.parseAsync(["node", "agno", "agent", "get", "a1"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -193,7 +193,7 @@ describe("agent command", () => {
 	describe("agent run", () => {
 		it("calls client.agents.run and handleNonStreamRun without --stream", async () => {
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello"]);
 
 			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
 			expect(mockAgentsRunStream).not.toHaveBeenCalled();
@@ -209,7 +209,7 @@ describe("agent command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello"]);
 
 			expect(mockAgentsRun).toHaveBeenCalledWith("a1", {
 				message: "hello",
@@ -223,7 +223,7 @@ describe("agent command", () => {
 			mockAgentsRunStream.mockResolvedValue(mockStream);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello", "--stream"]);
+			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello", "--stream"]);
 
 			expect(mockAgentsRunStream).toHaveBeenCalledWith("a1", {
 				message: "hello",
@@ -241,7 +241,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"agent",
 				"run",
 				"a1",
@@ -265,7 +265,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"agent",
 				"run",
 				"a1",
@@ -289,7 +289,7 @@ describe("agent command", () => {
 			mockHandleNonStreamRun.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "run", "a1", "hello"]);
+			await program.parseAsync(["node", "agno", "agent", "run", "a1", "hello"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -302,7 +302,7 @@ describe("agent command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "keep going"]);
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "keep going"]);
 
 			expect(mockAgentsContinue).toHaveBeenCalledWith("a1", "r1", {
 				tools: "keep going",
@@ -321,7 +321,7 @@ describe("agent command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"agent",
 				"continue",
 				"a1",
@@ -346,7 +346,7 @@ describe("agent command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "msg"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -360,7 +360,7 @@ describe("agent command", () => {
 			mockAgentsContinue.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "continue", "a1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "msg"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -372,7 +372,7 @@ describe("agent command", () => {
 			const { writeSuccess } = await import("../../src/lib/output.js");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "cancel", "a1", "r1"]);
+			await program.parseAsync(["node", "agno", "agent", "cancel", "a1", "r1"]);
 
 			expect(mockAgentsCancel).toHaveBeenCalledWith("a1", "r1");
 			expect(writeSuccess).toHaveBeenCalledWith("Cancelled run r1 for agent a1");
@@ -383,7 +383,7 @@ describe("agent command", () => {
 			mockAgentsCancel.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "agent", "cancel", "a1", "r1"]);
+			await program.parseAsync(["node", "agno", "agent", "cancel", "a1", "r1"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

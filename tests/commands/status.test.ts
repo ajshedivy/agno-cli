@@ -25,7 +25,7 @@ import { statusCommand } from "../../src/commands/status.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -51,7 +51,7 @@ describe("status command", () => {
 		});
 
 		const program = createProgram();
-		await program.parseAsync(["node", "agno-os", "status"]);
+		await program.parseAsync(["node", "agno", "status"]);
 
 		expect(mockGetConfig).toHaveBeenCalled();
 		expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -86,7 +86,7 @@ describe("status command", () => {
 		vi.mocked(getOutputFormat).mockReturnValue("json");
 
 		const program = createProgram();
-		await program.parseAsync(["node", "agno-os", "status"]);
+		await program.parseAsync(["node", "agno", "status"]);
 
 		expect(mockPrintJson).toHaveBeenCalledWith(configData);
 		expect(mockOutputDetail).not.toHaveBeenCalled();
@@ -97,7 +97,7 @@ describe("status command", () => {
 		mockGetConfig.mockRejectedValue(error);
 
 		const program = createProgram();
-		await program.parseAsync(["node", "agno-os", "status"]);
+		await program.parseAsync(["node", "agno", "status"]);
 
 		expect(mockHandleError).toHaveBeenCalledWith(error);
 	});

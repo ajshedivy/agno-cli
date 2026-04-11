@@ -20,7 +20,7 @@ let originalExitCode: number | undefined;
  * Commander requires a fresh instance per parseAsync call.
  */
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.addCommand(configCommand);
 	// Prevent Commander from calling process.exit on errors
@@ -32,7 +32,7 @@ function createProgram(): Command {
  * Parse a command string into argv array for Commander.
  */
 function argv(cmd: string): string[] {
-	return ["node", "agno-os", ...cmd.split(" ").filter(Boolean)];
+	return ["node", "agno", ...cmd.split(" ").filter(Boolean)];
 }
 
 describe("config command", () => {

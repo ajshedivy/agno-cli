@@ -47,7 +47,7 @@ import { workflowCommand } from "../../src/commands/workflows.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -69,7 +69,7 @@ describe("workflow command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "list"]);
+			await program.parseAsync(["node", "agno", "workflow", "list"]);
 
 			expect(mockWorkflowsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -88,7 +88,7 @@ describe("workflow command", () => {
 			mockWorkflowsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "list"]);
+			await program.parseAsync(["node", "agno", "workflow", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -105,7 +105,7 @@ describe("workflow command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "get", "w1"]);
+			await program.parseAsync(["node", "agno", "workflow", "get", "w1"]);
 
 			expect(mockWorkflowsGet).toHaveBeenCalledWith("w1");
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -130,7 +130,7 @@ describe("workflow command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "get", "w1"]);
+			await program.parseAsync(["node", "agno", "workflow", "get", "w1"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -143,7 +143,7 @@ describe("workflow command", () => {
 	describe("workflow run", () => {
 		it("calls handleNonStreamRun without --stream", async () => {
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "run", "w1", "hello"]);
+			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello"]);
 
 			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
 			expect(mockWorkflowsRunStream).not.toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe("workflow command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "run", "w1", "hello"]);
+			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello"]);
 
 			expect(mockWorkflowsRun).toHaveBeenCalledWith("w1", {
 				message: "hello",
@@ -172,7 +172,7 @@ describe("workflow command", () => {
 			mockWorkflowsRunStream.mockResolvedValue(mockStream);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "run", "w1", "hello", "--stream"]);
+			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello", "--stream"]);
 
 			expect(mockWorkflowsRunStream).toHaveBeenCalledWith("w1", {
 				message: "hello",
@@ -190,7 +190,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"workflow",
 				"run",
 				"w1",
@@ -214,7 +214,7 @@ describe("workflow command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"workflow",
 				"run",
 				"w1",
@@ -238,7 +238,7 @@ describe("workflow command", () => {
 			mockHandleNonStreamRun.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "run", "w1", "hello"]);
+			await program.parseAsync(["node", "agno", "workflow", "run", "w1", "hello"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -251,7 +251,7 @@ describe("workflow command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "continue", "w1", "r1", "keep going"]);
+			await program.parseAsync(["node", "agno", "workflow", "continue", "w1", "r1", "keep going"]);
 
 			expect(mockWorkflowsContinue).toHaveBeenCalledWith("w1", "r1", {
 				tools: "keep going",
@@ -268,7 +268,7 @@ describe("workflow command", () => {
 			mockWorkflowsContinue.mockResolvedValue(mockStream);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "continue", "w1", "r1", "keep going", "--stream"]);
+			await program.parseAsync(["node", "agno", "workflow", "continue", "w1", "r1", "keep going", "--stream"]);
 
 			expect(mockWorkflowsContinue).toHaveBeenCalledWith("w1", "r1", {
 				tools: "keep going",
@@ -286,7 +286,7 @@ describe("workflow command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "continue", "w1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "workflow", "continue", "w1", "r1", "msg"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -300,7 +300,7 @@ describe("workflow command", () => {
 			mockWorkflowsContinue.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "continue", "w1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "workflow", "continue", "w1", "r1", "msg"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -312,7 +312,7 @@ describe("workflow command", () => {
 			const { writeSuccess } = await import("../../src/lib/output.js");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "cancel", "w1", "r1"]);
+			await program.parseAsync(["node", "agno", "workflow", "cancel", "w1", "r1"]);
 
 			expect(mockWorkflowsCancel).toHaveBeenCalledWith("w1", "r1");
 			expect(writeSuccess).toHaveBeenCalledWith("Cancelled run r1 for workflow w1");
@@ -323,7 +323,7 @@ describe("workflow command", () => {
 			mockWorkflowsCancel.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "workflow", "cancel", "w1", "r1"]);
+			await program.parseAsync(["node", "agno", "workflow", "cancel", "w1", "r1"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

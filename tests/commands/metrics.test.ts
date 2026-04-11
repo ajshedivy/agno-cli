@@ -30,7 +30,7 @@ import { metricsCommand } from "../../src/commands/metrics.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -60,7 +60,7 @@ describe("metrics command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "metrics", "get"]);
+			await program.parseAsync(["node", "agno", "metrics", "get"]);
 
 			expect(mockMetricsGet).toHaveBeenCalledWith({
 				startingDate: undefined,
@@ -89,7 +89,7 @@ describe("metrics command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"metrics",
 				"get",
 				"--start-date",
@@ -113,7 +113,7 @@ describe("metrics command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "metrics", "get"]);
+			await program.parseAsync(["node", "agno", "metrics", "get"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(response);
 			expect(mockOutputList).not.toHaveBeenCalled();
@@ -124,7 +124,7 @@ describe("metrics command", () => {
 			mockMetricsGet.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "metrics", "get"]);
+			await program.parseAsync(["node", "agno", "metrics", "get"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -135,7 +135,7 @@ describe("metrics command", () => {
 			mockMetricsRefresh.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "metrics", "refresh"]);
+			await program.parseAsync(["node", "agno", "metrics", "refresh"]);
 
 			expect(mockMetricsRefresh).toHaveBeenCalled();
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Metrics refresh triggered.");
@@ -146,7 +146,7 @@ describe("metrics command", () => {
 			mockMetricsRefresh.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "metrics", "refresh"]);
+			await program.parseAsync(["node", "agno", "metrics", "refresh"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

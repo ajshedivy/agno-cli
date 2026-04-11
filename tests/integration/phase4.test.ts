@@ -18,7 +18,7 @@ interface CliResult {
  */
 function run(...args: string[]): CliResult {
 	try {
-		const stdout = execFileSync("npx", ["tsx", "src/bin/agno-os.ts", "--url", SERVER_URL, ...args], {
+		const stdout = execFileSync("npx", ["tsx", "src/bin/agno.ts", "--url", SERVER_URL, ...args], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			timeout: 30000,
@@ -53,7 +53,7 @@ function runJson(...args: string[]): { result: CliResult; parsed: unknown } {
  */
 function runLocal(...args: string[]): CliResult {
 	try {
-		const stdout = execFileSync("npx", ["tsx", "src/bin/agno-os.ts", ...args], {
+		const stdout = execFileSync("npx", ["tsx", "src/bin/agno.ts", ...args], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			timeout: 15000,
@@ -74,7 +74,7 @@ function runLocal(...args: string[]): CliResult {
  */
 function isServerAvailable(): boolean {
 	try {
-		execFileSync("npx", ["tsx", "src/bin/agno-os.ts", "--url", SERVER_URL, "status", "--output", "json"], {
+		execFileSync("npx", ["tsx", "src/bin/agno.ts", "--url", SERVER_URL, "status", "--output", "json"], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			timeout: 10000,

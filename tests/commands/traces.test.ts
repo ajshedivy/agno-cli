@@ -39,7 +39,7 @@ import { traceCommand } from "../../src/commands/traces.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -61,7 +61,7 @@ describe("trace command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "list"]);
+			await program.parseAsync(["node", "agno", "trace", "list"]);
 
 			expect(mockTracesList).toHaveBeenCalledWith(expect.objectContaining({ page: 1, limit: 20 }));
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -81,7 +81,7 @@ describe("trace command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "list", "--run-id", "r1", "--status", "completed"]);
+			await program.parseAsync(["node", "agno", "trace", "list", "--run-id", "r1", "--status", "completed"]);
 
 			expect(mockTracesList).toHaveBeenCalledWith(expect.objectContaining({ runId: "r1", status: "completed" }));
 		});
@@ -99,7 +99,7 @@ describe("trace command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "get", "t1"]);
+			await program.parseAsync(["node", "agno", "trace", "get", "t1"]);
 
 			expect(mockTracesGet).toHaveBeenCalledWith("t1");
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -116,7 +116,7 @@ describe("trace command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "get", "t1"]);
+			await program.parseAsync(["node", "agno", "trace", "get", "t1"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(expect.objectContaining({ trace_id: "t1" }));
 		});
@@ -129,7 +129,7 @@ describe("trace command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "stats", "--agent-id", "a1"]);
+			await program.parseAsync(["node", "agno", "trace", "stats", "--agent-id", "a1"]);
 
 			expect(mockTracesGetStats).toHaveBeenCalledWith(expect.objectContaining({ agentId: "a1" }));
 		});
@@ -139,7 +139,7 @@ describe("trace command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "stats"]);
+			await program.parseAsync(["node", "agno", "trace", "stats"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(expect.objectContaining({ some: "stats" }));
 		});
@@ -154,7 +154,7 @@ describe("trace command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"trace",
 				"search",
 				"--filter",
@@ -173,7 +173,7 @@ describe("trace command", () => {
 
 		it("rejects invalid JSON for --filter without calling SDK", async () => {
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "search", "--filter", "invalid"]);
+			await program.parseAsync(["node", "agno", "trace", "search", "--filter", "invalid"]);
 
 			expect(mockWriteError).toHaveBeenCalledWith("Invalid JSON for --filter");
 			expect(mockTracesSearch).not.toHaveBeenCalled();
@@ -186,7 +186,7 @@ describe("trace command", () => {
 			mockTracesList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "trace", "list"]);
+			await program.parseAsync(["node", "agno", "trace", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

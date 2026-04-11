@@ -47,7 +47,7 @@ import { teamCommand } from "../../src/commands/teams.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -69,7 +69,7 @@ describe("team command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "list"]);
+			await program.parseAsync(["node", "agno", "team", "list"]);
 
 			expect(mockTeamsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -88,7 +88,7 @@ describe("team command", () => {
 			mockTeamsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "list"]);
+			await program.parseAsync(["node", "agno", "team", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -105,7 +105,7 @@ describe("team command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "get", "t1"]);
+			await program.parseAsync(["node", "agno", "team", "get", "t1"]);
 
 			expect(mockTeamsGet).toHaveBeenCalledWith("t1");
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -129,7 +129,7 @@ describe("team command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "get", "t1"]);
+			await program.parseAsync(["node", "agno", "team", "get", "t1"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -142,7 +142,7 @@ describe("team command", () => {
 	describe("team run", () => {
 		it("calls handleNonStreamRun without --stream", async () => {
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "run", "t1", "hello"]);
+			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello"]);
 
 			expect(mockHandleNonStreamRun).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
 			expect(mockTeamsRunStream).not.toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe("team command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "run", "t1", "hello"]);
+			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello"]);
 
 			expect(mockTeamsRun).toHaveBeenCalledWith("t1", {
 				message: "hello",
@@ -171,7 +171,7 @@ describe("team command", () => {
 			mockTeamsRunStream.mockResolvedValue(mockStream);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "run", "t1", "hello", "--stream"]);
+			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello", "--stream"]);
 
 			expect(mockTeamsRunStream).toHaveBeenCalledWith("t1", {
 				message: "hello",
@@ -189,7 +189,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"team",
 				"run",
 				"t1",
@@ -213,7 +213,7 @@ describe("team command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"team",
 				"run",
 				"t1",
@@ -237,7 +237,7 @@ describe("team command", () => {
 			mockHandleNonStreamRun.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "run", "t1", "hello"]);
+			await program.parseAsync(["node", "agno", "team", "run", "t1", "hello"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -250,7 +250,7 @@ describe("team command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "continue", "t1", "r1", "keep going"]);
+			await program.parseAsync(["node", "agno", "team", "continue", "t1", "r1", "keep going"]);
 
 			expect(mockTeamsContinue).toHaveBeenCalledWith("t1", "r1", {
 				tools: "keep going",
@@ -267,7 +267,7 @@ describe("team command", () => {
 			mockTeamsContinue.mockResolvedValue(mockStream);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "continue", "t1", "r1", "keep going", "--stream"]);
+			await program.parseAsync(["node", "agno", "team", "continue", "t1", "r1", "keep going", "--stream"]);
 
 			expect(mockTeamsContinue).toHaveBeenCalledWith("t1", "r1", {
 				tools: "keep going",
@@ -285,7 +285,7 @@ describe("team command", () => {
 			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "continue", "t1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "team", "continue", "t1", "r1", "msg"]);
 
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
@@ -299,7 +299,7 @@ describe("team command", () => {
 			mockTeamsContinue.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "continue", "t1", "r1", "msg"]);
+			await program.parseAsync(["node", "agno", "team", "continue", "t1", "r1", "msg"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});
@@ -311,7 +311,7 @@ describe("team command", () => {
 			const { writeSuccess } = await import("../../src/lib/output.js");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "cancel", "t1", "r1"]);
+			await program.parseAsync(["node", "agno", "team", "cancel", "t1", "r1"]);
 
 			expect(mockTeamsCancel).toHaveBeenCalledWith("t1", "r1");
 			expect(writeSuccess).toHaveBeenCalledWith("Cancelled run r1 for team t1");
@@ -322,7 +322,7 @@ describe("team command", () => {
 			mockTeamsCancel.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "team", "cancel", "t1", "r1"]);
+			await program.parseAsync(["node", "agno", "team", "cancel", "t1", "r1"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

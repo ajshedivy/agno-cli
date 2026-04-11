@@ -49,7 +49,7 @@ import { memoryCommand } from "../../src/commands/memories.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -71,7 +71,7 @@ describe("memory command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "list"]);
+			await program.parseAsync(["node", "agno", "memory", "list"]);
 
 			expect(mockMemoriesList).toHaveBeenCalledWith(
 				expect.objectContaining({ page: 1, limit: 20 }),
@@ -97,7 +97,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "list",
+				"node", "agno", "memory", "list",
 				"--user-id", "u1",
 				"--topics", "t1,t2",
 			]);
@@ -118,7 +118,7 @@ describe("memory command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "list"]);
+			await program.parseAsync(["node", "agno", "memory", "list"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -142,7 +142,7 @@ describe("memory command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "get", "m1"]);
+			await program.parseAsync(["node", "agno", "memory", "get", "m1"]);
 
 			expect(mockMemoriesGet).toHaveBeenCalledWith("m1", { dbId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -170,7 +170,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "create",
+				"node", "agno", "memory", "create",
 				"--memory", "test content",
 				"--topics", "a,b",
 			]);
@@ -191,7 +191,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "update", "m1",
+				"node", "agno", "memory", "update", "m1",
 				"--memory", "updated content",
 			]);
 
@@ -208,7 +208,7 @@ describe("memory command", () => {
 			mockMemoriesDelete.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "delete", "m1"]);
+			await program.parseAsync(["node", "agno", "memory", "delete", "m1"]);
 
 			expect(mockMemoriesDelete).toHaveBeenCalledWith("m1", { dbId: undefined });
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Memory deleted.");
@@ -221,7 +221,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "delete-all",
+				"node", "agno", "memory", "delete-all",
 				"--ids", "id1,id2",
 			]);
 
@@ -239,7 +239,7 @@ describe("memory command", () => {
 			mockMemoriesGetTopics.mockResolvedValue(["topic1", "topic2"]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "topics"]);
+			await program.parseAsync(["node", "agno", "memory", "topics"]);
 
 			expect(mockMemoriesGetTopics).toHaveBeenCalledWith(
 				expect.objectContaining({}),
@@ -259,7 +259,7 @@ describe("memory command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "stats"]);
+			await program.parseAsync(["node", "agno", "memory", "stats"]);
 
 			expect(mockMemoriesGetStats).toHaveBeenCalledWith(
 				expect.objectContaining({}),
@@ -282,7 +282,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "optimize",
+				"node", "agno", "memory", "optimize",
 				"--user-id", "u1",
 				"--model", "gpt-4",
 				"--apply",
@@ -303,7 +303,7 @@ describe("memory command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "memory", "optimize",
+				"node", "agno", "memory", "optimize",
 				"--user-id", "u1",
 			]);
 
@@ -320,7 +320,7 @@ describe("memory command", () => {
 			mockMemoriesList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "memory", "list"]);
+			await program.parseAsync(["node", "agno", "memory", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

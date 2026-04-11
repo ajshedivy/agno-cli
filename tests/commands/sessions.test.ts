@@ -46,7 +46,7 @@ import { sessionCommand } from "../../src/commands/sessions.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -68,7 +68,7 @@ describe("session command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "list"]);
+			await program.parseAsync(["node", "agno", "session", "list"]);
 
 			expect(mockSessionsList).toHaveBeenCalledWith(
 				expect.objectContaining({ page: 1, limit: 20 }),
@@ -93,7 +93,7 @@ describe("session command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "list", "--type", "agent", "--limit", "5", "--page", "2"]);
+			await program.parseAsync(["node", "agno", "session", "list", "--type", "agent", "--limit", "5", "--page", "2"]);
 
 			expect(mockSessionsList).toHaveBeenCalledWith(
 				expect.objectContaining({ type: "agent", limit: 5, page: 2 }),
@@ -108,7 +108,7 @@ describe("session command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "list"]);
+			await program.parseAsync(["node", "agno", "session", "list"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -131,7 +131,7 @@ describe("session command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "get", "s1"]);
+			await program.parseAsync(["node", "agno", "session", "get", "s1"]);
 
 			expect(mockSessionsGet).toHaveBeenCalledWith("s1", { dbId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -159,7 +159,7 @@ describe("session command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "session", "create",
+				"node", "agno", "session", "create",
 				"--type", "agent",
 				"--component-id", "abc",
 			]);
@@ -177,7 +177,7 @@ describe("session command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "session", "update", "s1",
+				"node", "agno", "session", "update", "s1",
 				"--name", "updated",
 				"--state", '{"key":"val"}',
 			]);
@@ -195,7 +195,7 @@ describe("session command", () => {
 		it("rejects invalid JSON for --state without calling SDK", async () => {
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "session", "update", "s1",
+				"node", "agno", "session", "update", "s1",
 				"--state", "not-json",
 			]);
 
@@ -206,7 +206,7 @@ describe("session command", () => {
 		it("rejects invalid JSON for --metadata without calling SDK", async () => {
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "session", "update", "s1",
+				"node", "agno", "session", "update", "s1",
 				"--metadata", "{bad",
 			]);
 
@@ -220,7 +220,7 @@ describe("session command", () => {
 			mockSessionsDelete.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "delete", "s1"]);
+			await program.parseAsync(["node", "agno", "session", "delete", "s1"]);
 
 			expect(mockSessionsDelete).toHaveBeenCalledWith("s1", { dbId: undefined });
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Session deleted.");
@@ -233,7 +233,7 @@ describe("session command", () => {
 
 			const program = createProgram();
 			await program.parseAsync([
-				"node", "agno-os", "session", "delete-all",
+				"node", "agno", "session", "delete-all",
 				"--ids", "id1,id2,id3",
 				"--types", "agent,agent,team",
 			]);
@@ -255,7 +255,7 @@ describe("session command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "runs", "s1"]);
+			await program.parseAsync(["node", "agno", "session", "runs", "s1"]);
 
 			expect(mockSessionsGetRuns).toHaveBeenCalledWith("s1");
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -274,7 +274,7 @@ describe("session command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "runs", "s1"]);
+			await program.parseAsync(["node", "agno", "session", "runs", "s1"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith({ data: [{ run_id: "r1" }] });
 		});
@@ -286,7 +286,7 @@ describe("session command", () => {
 			mockSessionsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "session", "list"]);
+			await program.parseAsync(["node", "agno", "session", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

@@ -45,7 +45,7 @@ import { knowledgeCommand } from "../../src/commands/knowledge.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -67,7 +67,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "list"]);
+			await program.parseAsync(["node", "agno", "knowledge", "list"]);
 
 			expect(mockKnowledgeList).toHaveBeenCalledWith(expect.objectContaining({ page: 1, limit: 20 }));
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -89,7 +89,7 @@ describe("knowledge command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "list"]);
+			await program.parseAsync(["node", "agno", "knowledge", "list"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -111,7 +111,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "get", "k1"]);
+			await program.parseAsync(["node", "agno", "knowledge", "get", "k1"]);
 
 			expect(mockKnowledgeGet).toHaveBeenCalledWith("k1", undefined);
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -132,7 +132,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "search", "test query"]);
+			await program.parseAsync(["node", "agno", "knowledge", "search", "test query"]);
 
 			expect(mockKnowledgeSearch).toHaveBeenCalledWith("test query", expect.objectContaining({ searchType: "vector" }));
 		});
@@ -146,7 +146,7 @@ describe("knowledge command", () => {
 			const program = createProgram();
 			await program.parseAsync([
 				"node",
-				"agno-os",
+				"agno",
 				"knowledge",
 				"search",
 				"test",
@@ -170,7 +170,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "search", "test"]);
+			await program.parseAsync(["node", "agno", "knowledge", "search", "test"]);
 
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
@@ -191,7 +191,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "search", "test"]);
+			await program.parseAsync(["node", "agno", "knowledge", "search", "test"]);
 
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
@@ -210,7 +210,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "status", "k1"]);
+			await program.parseAsync(["node", "agno", "knowledge", "status", "k1"]);
 
 			expect(mockKnowledgeGetStatus).toHaveBeenCalledWith("k1", undefined);
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -228,7 +228,7 @@ describe("knowledge command", () => {
 			mockKnowledgeDelete.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "delete", "k1"]);
+			await program.parseAsync(["node", "agno", "knowledge", "delete", "k1"]);
 
 			expect(mockKnowledgeDelete).toHaveBeenCalledWith("k1", undefined);
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Knowledge content deleted.");
@@ -240,7 +240,7 @@ describe("knowledge command", () => {
 			mockKnowledgeDeleteAll.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "delete-all"]);
+			await program.parseAsync(["node", "agno", "knowledge", "delete-all"]);
 
 			expect(mockKnowledgeDeleteAll).toHaveBeenCalledWith(undefined);
 			expect(mockWriteSuccess).toHaveBeenCalledWith("All knowledge content deleted.");
@@ -256,7 +256,7 @@ describe("knowledge command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "config"]);
+			await program.parseAsync(["node", "agno", "knowledge", "config"]);
 
 			expect(mockKnowledgeGetConfig).toHaveBeenCalledWith(undefined);
 		});
@@ -266,7 +266,7 @@ describe("knowledge command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "config"]);
+			await program.parseAsync(["node", "agno", "knowledge", "config"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(expect.objectContaining({ readers: [] }));
 		});
@@ -278,7 +278,7 @@ describe("knowledge command", () => {
 			mockKnowledgeList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "knowledge", "list"]);
+			await program.parseAsync(["node", "agno", "knowledge", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

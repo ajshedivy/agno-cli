@@ -26,7 +26,7 @@ vi.mock("../../src/lib/errors.js", () => ({
 import { modelCommand } from "../../src/commands/models.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -48,7 +48,7 @@ describe("models command", () => {
 			]);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "models", "list"]);
+			await program.parseAsync(["node", "agno", "models", "list"]);
 
 			expect(mockModelsList).toHaveBeenCalled();
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe("models command", () => {
 			mockModelsList.mockResolvedValue(models);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "models", "list", "--limit", "3", "--page", "2"]);
+			await program.parseAsync(["node", "agno", "models", "list", "--limit", "3", "--page", "2"]);
 
 			const callArgs = mockOutputList.mock.calls[0];
 			expect(callArgs[1]).toHaveLength(3);
@@ -92,7 +92,7 @@ describe("models command", () => {
 			mockModelsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "models", "list"]);
+			await program.parseAsync(["node", "agno", "models", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

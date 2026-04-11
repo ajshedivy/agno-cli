@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 
 const execFile = promisify(execFileCb);
 
-const CLI_BIN = "./dist/bin/agno-os.js";
+const CLI_BIN = "./dist/bin/agno.js";
 const SERVER_URL = "http://localhost:8000";
 
 interface ExecResult {

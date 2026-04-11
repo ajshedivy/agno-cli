@@ -17,7 +17,7 @@ interface CliResult {
  */
 function run(...args: string[]): CliResult {
 	try {
-		const stdout = execFileSync("npx", ["tsx", "src/bin/agno-os.ts", "--url", SERVER_URL, ...args], {
+		const stdout = execFileSync("npx", ["tsx", "src/bin/agno.ts", "--url", SERVER_URL, ...args], {
 			cwd: PROJECT_ROOT,
 			encoding: "utf-8",
 			timeout: 15000,

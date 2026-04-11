@@ -37,7 +37,7 @@ import { evalCommand } from "../../src/commands/evals.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	program.option("--url <url>", "Override base URL");
 	program.option("--key <key>", "Override security key");
@@ -59,7 +59,7 @@ describe("eval command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "list"]);
+			await program.parseAsync(["node", "agno", "eval", "list"]);
 
 			expect(mockEvalsList).toHaveBeenCalledWith(expect.objectContaining({ page: 1, limit: 20 }));
 			expect(mockOutputList).toHaveBeenCalledWith(
@@ -79,7 +79,7 @@ describe("eval command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "list", "--agent-id", "a1", "--type", "accuracy"]);
+			await program.parseAsync(["node", "agno", "eval", "list", "--agent-id", "a1", "--type", "accuracy"]);
 
 			expect(mockEvalsList).toHaveBeenCalledWith(expect.objectContaining({ agentId: "a1", type: "accuracy" }));
 		});
@@ -92,7 +92,7 @@ describe("eval command", () => {
 			vi.mocked(getOutputFormat).mockReturnValue("json");
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "list"]);
+			await program.parseAsync(["node", "agno", "eval", "list"]);
 
 			expect(mockPrintJson).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -118,7 +118,7 @@ describe("eval command", () => {
 			});
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "get", "e1"]);
+			await program.parseAsync(["node", "agno", "eval", "get", "e1"]);
 
 			expect(mockEvalsGet).toHaveBeenCalledWith("e1");
 			expect(mockOutputDetail).toHaveBeenCalledWith(
@@ -136,7 +136,7 @@ describe("eval command", () => {
 			mockEvalsDelete.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "delete", "--ids", "id1,id2,id3"]);
+			await program.parseAsync(["node", "agno", "eval", "delete", "--ids", "id1,id2,id3"]);
 
 			expect(mockEvalsDelete).toHaveBeenCalledWith(expect.objectContaining({ ids: ["id1", "id2", "id3"] }));
 			expect(mockWriteSuccess).toHaveBeenCalledWith("Eval runs deleted.");
@@ -146,7 +146,7 @@ describe("eval command", () => {
 			mockEvalsDelete.mockResolvedValue(undefined);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "delete", "--ids", "id1, id2 , id3"]);
+			await program.parseAsync(["node", "agno", "eval", "delete", "--ids", "id1, id2 , id3"]);
 
 			expect(mockEvalsDelete).toHaveBeenCalledWith(expect.objectContaining({ ids: ["id1", "id2", "id3"] }));
 		});
@@ -158,7 +158,7 @@ describe("eval command", () => {
 			mockEvalsList.mockRejectedValue(error);
 
 			const program = createProgram();
-			await program.parseAsync(["node", "agno-os", "eval", "list"]);
+			await program.parseAsync(["node", "agno", "eval", "list"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error);
 		});

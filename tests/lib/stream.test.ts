@@ -68,7 +68,7 @@ function createMockStream(events: StreamEvent[]): AgentStream {
 }
 
 function createProgram(): Command {
-	const program = new Command("agno-os");
+	const program = new Command("agno");
 	program.option("-o, --output <format>", "Output format", "table");
 	return program;
 }
