@@ -118,17 +118,17 @@ agentCommand
 	.command("continue")
 	.argument("<agent_id>", "Agent ID")
 	.argument("<run_id>", "Run ID to continue")
-	.argument("<message>", "Message to continue with")
+	.argument("<tool_results>", "Tool results JSON to continue the run")
 	.description("Continue an agent run")
 	.option("-s, --stream", "Stream the response via SSE")
 	.option("--session-id <id>", "Session ID")
 	.option("--user-id <id>", "User ID")
-	.action(async (agentId: string, runId: string, message: string, options, cmd) => {
+	.action(async (agentId: string, runId: string, toolResults: string, options, cmd) => {
 		try {
 			const client = getClient(cmd);
 			if (options.stream) {
 				const stream = await client.agents.continue(agentId, runId, {
-					tools: message,
+					tools: toolResults,
 					sessionId: options.sessionId,
 					userId: options.userId,
 					stream: true,
@@ -136,7 +136,7 @@ agentCommand
 				await handleStreamRun(cmd, stream as AgentStream, "agent");
 			} else {
 				const result = await client.agents.continue(agentId, runId, {
-					tools: message,
+					tools: toolResults,
 					sessionId: options.sessionId,
 					userId: options.userId,
 					stream: false,

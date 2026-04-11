@@ -40,7 +40,7 @@ describe("status command", () => {
 		vi.clearAllMocks();
 	});
 
-	it("calls getConfig and outputs detail with OS info", async () => {
+	it("calls getConfig and outputs detail with OS info including name and description", async () => {
 		mockGetConfig.mockResolvedValue({
 			os_id: "os-123",
 			name: "Test OS",
@@ -67,10 +67,36 @@ describe("status command", () => {
 				workflows: 0,
 			}),
 			expect.objectContaining({
-				labels: expect.arrayContaining(["OS ID", "Name"]),
-				keys: expect.arrayContaining(["os_id", "name"]),
+				labels: expect.arrayContaining(["OS ID", "Name", "Description"]),
+				keys: expect.arrayContaining(["os_id", "name", "description"]),
 			}),
 		);
+	});
+
+	it("omits Name and Description when API returns null for those fields", async () => {
+		mockGetConfig.mockResolvedValue({
+			os_id: "os-456",
+			name: null,
+			description: null,
+			databases: [],
+			agents: [],
+			teams: [],
+			workflows: [],
+		});
+
+		const program = createProgram();
+		await program.parseAsync(["node", "agno", "status"]);
+
+		expect(mockGetConfig).toHaveBeenCalled();
+		const callArgs = mockOutputDetail.mock.calls[0];
+		const labels = callArgs[2].labels as string[];
+		const keys = callArgs[2].keys as string[];
+		expect(labels).not.toContain("Name");
+		expect(labels).not.toContain("Description");
+		expect(keys).not.toContain("name");
+		expect(keys).not.toContain("description");
+		expect(labels).toContain("OS ID");
+		expect(labels).toContain("Databases");
 	});
 
 	it("outputs JSON with printJson when format is json", async () => {

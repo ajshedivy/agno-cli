@@ -18,22 +18,32 @@ export const statusCommand = new Command("status")
 				return;
 			}
 
-			outputDetail(
-				cmd,
-				{
-					os_id: config.os_id ?? "N/A",
-					name: config.name ?? "N/A",
-					description: config.description ?? "N/A",
-					databases: Array.isArray(config.databases) ? config.databases.length : 0,
-					agents: Array.isArray(config.agents) ? config.agents.length : 0,
-					teams: Array.isArray(config.teams) ? config.teams.length : 0,
-					workflows: Array.isArray(config.workflows) ? config.workflows.length : 0,
-				},
-				{
-					labels: ["OS ID", "Name", "Description", "Databases", "Agents", "Teams", "Workflows"],
-					keys: ["os_id", "name", "description", "databases", "agents", "teams", "workflows"],
-				},
-			);
+			const display: Record<string, unknown> = {
+				os_id: config.os_id ?? "unknown",
+			};
+			const labels: string[] = ["OS ID"];
+			const keys: string[] = ["os_id"];
+
+			if (config.name) {
+				display.name = config.name;
+				labels.push("Name");
+				keys.push("name");
+			}
+			if (config.description) {
+				display.description = config.description;
+				labels.push("Description");
+				keys.push("description");
+			}
+
+			// Always show resource counts
+			display.databases = Array.isArray(config.databases) ? config.databases.length : 0;
+			display.agents = Array.isArray(config.agents) ? config.agents.length : 0;
+			display.teams = Array.isArray(config.teams) ? config.teams.length : 0;
+			display.workflows = Array.isArray(config.workflows) ? config.workflows.length : 0;
+			labels.push("Databases", "Agents", "Teams", "Workflows");
+			keys.push("databases", "agents", "teams", "workflows");
+
+			outputDetail(cmd, display, { labels, keys });
 		} catch (err) {
 			handleError(err, { url: getBaseUrl(cmd) });
 		}

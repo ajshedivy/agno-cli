@@ -30,13 +30,12 @@ modelCommand
 			outputList(
 				cmd,
 				paged.map((m) => ({
-					name: m.name ?? "",
-					model: m.model ?? "",
+					id: m.id ?? "",
 					provider: m.provider ?? "",
 				})),
 				{
-					columns: ["NAME", "MODEL", "PROVIDER"],
-					keys: ["name", "model", "provider"],
+					columns: ["ID", "PROVIDER"],
+					keys: ["id", "provider"],
 					meta,
 				},
 			);

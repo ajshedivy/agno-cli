@@ -42,10 +42,10 @@ describe("models command", () => {
 	});
 
 	describe("models list", () => {
-		it("calls client.models.list and outputs NAME, MODEL, PROVIDER columns", async () => {
+		it("calls client.models.list and outputs ID, PROVIDER columns", async () => {
 			mockModelsList.mockResolvedValue([
-				{ name: "GPT-4", model: "gpt-4", provider: "OpenAI" },
-				{ name: "Claude", model: "claude-3", provider: "Anthropic" },
+				{ id: "gpt-4", provider: "openai" },
+				{ id: "claude-3", provider: "anthropic" },
 			]);
 
 			const program = createProgram();
@@ -55,12 +55,12 @@ describe("models command", () => {
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.arrayContaining([
-					expect.objectContaining({ name: "GPT-4", model: "gpt-4", provider: "OpenAI" }),
-					expect.objectContaining({ name: "Claude", model: "claude-3", provider: "Anthropic" }),
+					expect.objectContaining({ id: "gpt-4", provider: "openai" }),
+					expect.objectContaining({ id: "claude-3", provider: "anthropic" }),
 				]),
 				expect.objectContaining({
-					columns: ["NAME", "MODEL", "PROVIDER"],
-					keys: ["name", "model", "provider"],
+					columns: ["ID", "PROVIDER"],
+					keys: ["id", "provider"],
 					meta: expect.objectContaining({ total_count: 2 }),
 				}),
 			);
@@ -68,9 +68,8 @@ describe("models command", () => {
 
 		it("applies client-side pagination", async () => {
 			const models = Array.from({ length: 8 }, (_, i) => ({
-				name: `Model ${i}`,
-				model: `model-${i}`,
-				provider: `Provider ${i}`,
+				id: `model-${i}`,
+				provider: `provider-${i}`,
 			}));
 			mockModelsList.mockResolvedValue(models);
 
@@ -79,7 +78,7 @@ describe("models command", () => {
 
 			const callArgs = mockOutputList.mock.calls[0];
 			expect(callArgs[1]).toHaveLength(3);
-			expect(callArgs[1][0]).toEqual(expect.objectContaining({ name: "Model 3" }));
+			expect(callArgs[1][0]).toEqual(expect.objectContaining({ id: "model-3" }));
 			expect(callArgs[2].meta).toEqual({
 				page: 2,
 				limit: 3,

@@ -157,15 +157,25 @@ describe("trace command", () => {
 	});
 
 	describe("trace stats", () => {
-		it("calls client.traces.getStats with agent ID filter", async () => {
+		it("calls client.traces.getStats with agent ID filter and outputs correct columns", async () => {
 			mockTracesGetStats.mockResolvedValue({
-				data: [{ session_id: "s1", run_count: 5, total_tokens: 1000, avg_duration: 50 }],
+				data: [{ session_id: "s1", user_id: "u1", agent_id: "a1", total_traces: 5, first_trace_at: "2024-01-01", last_trace_at: "2024-01-02" }],
 			});
 
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "trace", "stats", "--agent-id", "a1"]);
 
 			expect(mockTracesGetStats).toHaveBeenCalledWith(expect.objectContaining({ agentId: "a1" }));
+			expect(mockOutputList).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.arrayContaining([
+					expect.objectContaining({ session_id: "s1", user_id: "u1", agent_id: "a1", total_traces: 5 }),
+				]),
+				expect.objectContaining({
+					columns: ["SESSION_ID", "USER_ID", "AGENT_ID", "TOTAL_TRACES", "FIRST_TRACE", "LAST_TRACE"],
+					keys: ["session_id", "user_id", "agent_id", "total_traces", "first_trace_at", "last_trace_at"],
+				}),
+			);
 		});
 
 		it("outputs JSON in json mode", async () => {

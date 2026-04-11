@@ -149,13 +149,15 @@ traceCommand
 					cmd,
 					data.map((s) => ({
 						session_id: (s as Record<string, unknown>).session_id ?? "",
-						run_count: (s as Record<string, unknown>).run_count ?? "",
-						total_tokens: (s as Record<string, unknown>).total_tokens ?? "",
-						avg_duration: (s as Record<string, unknown>).avg_duration ?? "",
+						user_id: (s as Record<string, unknown>).user_id ?? "",
+						agent_id: (s as Record<string, unknown>).agent_id ?? "",
+						total_traces: (s as Record<string, unknown>).total_traces ?? 0,
+						first_trace_at: (s as Record<string, unknown>).first_trace_at ?? "",
+						last_trace_at: (s as Record<string, unknown>).last_trace_at ?? "",
 					})),
 					{
-						columns: ["SESSION_ID", "RUN_COUNT", "TOTAL_TOKENS", "AVG_DURATION"],
-						keys: ["session_id", "run_count", "total_tokens", "avg_duration"],
+						columns: ["SESSION_ID", "USER_ID", "AGENT_ID", "TOTAL_TRACES", "FIRST_TRACE", "LAST_TRACE"],
+						keys: ["session_id", "user_id", "agent_id", "total_traces", "first_trace_at", "last_trace_at"],
 					},
 				);
 			} else {
