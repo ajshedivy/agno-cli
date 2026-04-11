@@ -145,7 +145,7 @@ describe("agent command", () => {
 	});
 
 	describe("agent get", () => {
-		it("calls client.agents.get with agent ID and prints plain-text detail", async () => {
+		it("calls client.agents.get with agent ID and passes to outputDetail", async () => {
 			mockAgentsGet.mockResolvedValue({
 				id: "a1",
 				name: "Agent 1",
@@ -153,19 +153,23 @@ describe("agent command", () => {
 				model: { model: "gpt-4", name: "GPT-4" },
 			});
 
-			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "agent", "get", "a1"]);
 
 			expect(mockAgentsGet).toHaveBeenCalledWith("a1");
-			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
-			expect(written).toContain("ID:          a1");
-			expect(written).toContain("Name:        Agent 1");
-			expect(written).toContain("Description: A test agent");
-			expect(written).toContain("Model:       gpt-4");
-
-			stdoutSpy.mockRestore();
+			expect(mockOutputDetail).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.objectContaining({
+					id: "a1",
+					name: "Agent 1",
+					description: "A test agent",
+					model: "gpt-4",
+				}),
+				expect.objectContaining({
+					labels: ["ID", "Name", "Description", "Model"],
+					keys: ["id", "name", "description", "model"],
+				}),
+			);
 		});
 
 		it("outputs raw JSON in json mode", async () => {

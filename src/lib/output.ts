@@ -118,19 +118,17 @@ export function outputDetail(
 		return;
 	}
 
-	const table = new Table({
-		style: { head: [], border: [] },
-	});
-
+	const maxLabelLen = Math.max(...opts.labels.map((l) => l.length));
+	const lines: string[] = [];
 	for (let i = 0; i < opts.labels.length; i++) {
 		const label = opts.labels[i];
 		const key = opts.keys[i];
 		if (label !== undefined && key !== undefined) {
-			table.push({ [chalk.bold(label)]: String(data[key] ?? "") });
+			const padded = `${label}:`.padEnd(maxLabelLen + 2);
+			lines.push(`${chalk.bold(padded)} ${String(data[key] ?? "")}`);
 		}
 	}
-
-	process.stdout.write(`${table.toString()}\n`);
+	process.stdout.write(`${lines.join("\n")}\n`);
 }
 
 /**

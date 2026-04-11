@@ -2,8 +2,7 @@ import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
 import { getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
-import chalk from "chalk";
-import { getOutputFormat, outputList, writeSuccess } from "../lib/output.js";
+import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
 import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
 
 export const agentCommand = new Command("agent").description("Manage agents");
@@ -65,13 +64,19 @@ agentCommand
 			}
 
 			const modelDisplay = agent.model?.model ?? agent.model?.name ?? "N/A";
-			const lines = [
-				`${chalk.bold("ID:")}          ${agent.id ?? ""}`,
-				`${chalk.bold("Name:")}        ${agent.name ?? ""}`,
-				`${chalk.bold("Description:")} ${agent.description ?? ""}`,
-				`${chalk.bold("Model:")}       ${modelDisplay}`,
-			];
-			process.stdout.write(`${lines.join("\n")}\n`);
+			outputDetail(
+				cmd,
+				{
+					id: agent.id ?? "",
+					name: agent.name ?? "",
+					description: agent.description ?? "",
+					model: modelDisplay,
+				},
+				{
+					labels: ["ID", "Name", "Description", "Model"],
+					keys: ["id", "name", "description", "model"],
+				},
+			);
 		} catch (err) {
 			handleError(err);
 		}
