@@ -10,6 +10,7 @@ metricsCommand
 	.description("Get aggregated metrics")
 	.option("--start-date <date>", "Start date (YYYY-MM-DD)")
 	.option("--end-date <date>", "End date (YYYY-MM-DD)")
+	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -17,6 +18,7 @@ metricsCommand
 			const response = await client.metrics.get({
 				startingDate: opts.startDate as string | undefined,
 				endingDate: opts.endDate as string | undefined,
+				dbId: opts.dbId as string | undefined,
 			});
 
 			const format = getOutputFormat(cmd);
@@ -48,10 +50,12 @@ metricsCommand
 metricsCommand
 	.command("refresh")
 	.description("Trigger metrics refresh")
+	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {
 		try {
+			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			await client.metrics.refresh();
+			await client.metrics.refresh({ dbId: opts.dbId as string | undefined });
 			writeSuccess("Metrics refresh triggered.");
 		} catch (err) {
 			handleError(err, { url: getBaseUrl(cmd) });
