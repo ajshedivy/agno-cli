@@ -166,21 +166,6 @@ export function writeWarning(msg: string): void {
 }
 
 /**
- * Write verbose request details to stderr when --verbose is active.
- * Silent when verbose is not enabled.
- */
-export function writeVerbose(cmd: Command, method: string, url: string, status?: number, durationMs?: number): void {
-	const globals = cmd.optsWithGlobals();
-	if (!globals.verbose) return;
-
-	const parts = [method, url];
-	if (status != null) parts.push(`-> ${status}`);
-	if (durationMs != null) parts.push(`(${durationMs}ms)`);
-
-	process.stderr.write(`${chalk.dim(parts.join(" "))}\n`);
-}
-
-/**
  * Mask an API key for safe display. Shows first 3 + last 4 characters.
  * Returns "(not set)" for undefined, null, or empty strings.
  */

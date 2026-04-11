@@ -179,27 +179,6 @@ describe("output module", () => {
 		});
 	});
 
-	describe("writeVerbose", () => {
-		it("writes to stderr when verbose=true in globals", async () => {
-			const { writeVerbose } = await import("../../src/lib/output.js");
-			const cmd = makeCmd({ verbose: true });
-			writeVerbose(cmd, "GET", "https://api.example.com/agents", 200, 150);
-			expect(stderrWrite).toHaveBeenCalled();
-			const written = stderrWrite.mock.calls.map((c) => c[0]).join("");
-			expect(written).toContain("GET");
-			expect(written).toContain("https://api.example.com/agents");
-			expect(written).toContain("200");
-			expect(written).toContain("150");
-		});
-
-		it("is silent when verbose=false", async () => {
-			const { writeVerbose } = await import("../../src/lib/output.js");
-			const cmd = makeCmd({ verbose: false });
-			writeVerbose(cmd, "GET", "https://api.example.com/agents");
-			expect(stderrWrite).not.toHaveBeenCalled();
-		});
-	});
-
 	describe("maskKey", () => {
 		it('masks "sk-abc123def456" to show first 3 + last 4 chars', async () => {
 			const { maskKey } = await import("../../src/lib/output.js");

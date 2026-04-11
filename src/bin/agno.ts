@@ -24,7 +24,6 @@ const program = new Command("agno-cli")
 	.option("--key <key>", "Override security key")
 	.option("--timeout <seconds>", "Override timeout", Number.parseFloat)
 	.option("--no-color", "Disable color output")
-	.option("-v, --verbose", "Enable verbose output")
 	.option("--json [fields]", "Output JSON with optional field selection (e.g., --json id,name)")
 	.addOption(new Option("-o, --output <format>", "Output format").choices(["json", "table"]));
 
