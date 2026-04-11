@@ -100,6 +100,11 @@ program.addCommand(databaseCommand);
 const { registryCommand } = await import("../commands/registry.js");
 program.addCommand(registryCommand);
 
+// Show help when invoked with no subcommand
+program.action(() => {
+	program.outputHelp();
+});
+
 // Error handling for Commander parse failures
 program.exitOverride();
 try {
