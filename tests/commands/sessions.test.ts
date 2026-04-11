@@ -101,6 +101,18 @@ describe("session command", () => {
 			);
 		});
 
+		it("passes --db-id to SDK list call", async () => {
+			mockSessionsList.mockResolvedValue({
+				data: [],
+				meta: { page: 1, limit: 20, total_pages: 0, total_count: 0 },
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "session", "list", "--db-id", "mydb"]);
+
+			expect(mockSessionsList).toHaveBeenCalledWith(expect.objectContaining({ dbId: "mydb" }));
+		});
+
 		it("outputs JSON with data and meta in json mode", async () => {
 			mockSessionsList.mockResolvedValue({
 				data: [{ session_id: "s1", session_name: "test" }],
@@ -258,7 +270,7 @@ describe("session command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "session", "runs", "s1"]);
 
-			expect(mockSessionsGetRuns).toHaveBeenCalledWith("s1");
+			expect(mockSessionsGetRuns).toHaveBeenCalledWith("s1", { dbId: undefined });
 			expect(mockOutputList).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.arrayContaining([
@@ -268,6 +280,17 @@ describe("session command", () => {
 					columns: ["RUN_ID", "STATUS", "CREATED_AT"],
 				}),
 			);
+		});
+
+		it("passes --db-id to SDK getRuns call", async () => {
+			mockSessionsGetRuns.mockResolvedValue([
+				{ run_id: "r1", status: "completed", created_at: "2024-01-01" },
+			]);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "session", "runs", "s1", "--db-id", "mydb"]);
+
+			expect(mockSessionsGetRuns).toHaveBeenCalledWith("s1", { dbId: "mydb" });
 		});
 
 		it("outputs JSON with data wrapper in json mode", async () => {

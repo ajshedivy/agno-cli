@@ -86,6 +86,18 @@ describe("trace command", () => {
 
 			expect(mockTracesList).toHaveBeenCalledWith(expect.objectContaining({ runId: "r1", status: "completed" }));
 		});
+
+		it("passes --db-id to SDK list call", async () => {
+			mockTracesList.mockResolvedValue({
+				data: [],
+				meta: { page: 1, limit: 20, total_pages: 0, total_count: 0 },
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "trace", "list", "--db-id", "mydb"]);
+
+			expect(mockTracesList).toHaveBeenCalledWith(expect.objectContaining({ dbId: "mydb" }));
+		});
 	});
 
 	describe("trace get", () => {
@@ -102,7 +114,7 @@ describe("trace command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "trace", "get", "t1"]);
 
-			expect(mockTracesGet).toHaveBeenCalledWith("t1");
+			expect(mockTracesGet).toHaveBeenCalledWith("t1", { dbId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.objectContaining({ trace_id: "t1", name: "trace1" }),
@@ -110,6 +122,22 @@ describe("trace command", () => {
 					labels: ["Trace ID", "Name", "Status", "Duration", "Start Time", "End Time", "Error"],
 				}),
 			);
+		});
+
+		it("passes --db-id to SDK get call", async () => {
+			mockTracesGet.mockResolvedValue({
+				trace_id: "t1",
+				name: "trace1",
+				status: "completed",
+				duration: 100,
+				start_time: "2024-01-01",
+				end_time: "2024-01-02",
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "trace", "get", "t1", "--db-id", "mydb"]);
+
+			expect(mockTracesGet).toHaveBeenCalledWith("t1", { dbId: "mydb" });
 		});
 
 		it("routes JSON output through outputDetail for field selection", async () => {

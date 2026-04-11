@@ -17,6 +17,7 @@ traceCommand
 	.option("--status <status>", "Filter by status")
 	.option("--limit <n>", "Results per page", (v: string) => Number.parseInt(v, 10), 20)
 	.option("--page <n>", "Page number", (v: string) => Number.parseInt(v, 10), 1)
+	.option("--db-id <id>", "Database ID")
 	.action(async (_options, cmd) => {
 		try {
 			const opts = cmd.optsWithGlobals();
@@ -29,6 +30,7 @@ traceCommand
 				status: opts.status,
 				page: opts.page,
 				limit: opts.limit,
+				dbId: opts.dbId,
 			});
 
 			const data = (result as Record<string, unknown>).data as Record<string, unknown>[];
@@ -68,10 +70,12 @@ traceCommand
 	.command("get")
 	.argument("<trace_id>", "Trace ID")
 	.description("Get trace details")
+	.option("--db-id <id>", "Database ID")
 	.action(async (traceId: string, _options, cmd) => {
 		try {
+			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const result = await client.traces.get(traceId);
+			const result = await client.traces.get(traceId, { dbId: opts.dbId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {

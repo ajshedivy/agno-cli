@@ -74,10 +74,12 @@ evalCommand
 	.command("get")
 	.argument("<eval_run_id>", "Eval run ID")
 	.description("Get eval run details")
+	.option("--db-id <id>", "Database ID")
 	.action(async (evalRunId: string, _options, cmd) => {
 		try {
+			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const result = await client.evals.get(evalRunId);
+			const result = await client.evals.get(evalRunId, { dbId: opts.dbId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {

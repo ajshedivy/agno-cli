@@ -30,6 +30,7 @@ sessionCommand
 				limit: opts.limit,
 				sortBy: opts.sortBy,
 				sortOrder: opts.sortOrder,
+				dbId: opts.dbId,
 			});
 
 			const data = (result as Record<string, unknown>).data as Record<string, unknown>[];
@@ -254,10 +255,12 @@ sessionCommand
 	.command("runs")
 	.argument("<session_id>", "Session ID")
 	.description("List runs for a session")
+	.option("--db-id <id>", "Database ID")
 	.action(async (sessionId: string, _options, cmd) => {
 		try {
+			const opts = cmd.optsWithGlobals();
 			const client = getClient(cmd);
-			const runs = await client.sessions.getRuns(sessionId);
+			const runs = await client.sessions.getRuns(sessionId, { dbId: opts.dbId });
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {

@@ -121,7 +121,7 @@ describe("eval command", () => {
 			const program = createProgram();
 			await program.parseAsync(["node", "agno", "eval", "get", "e1"]);
 
-			expect(mockEvalsGet).toHaveBeenCalledWith("e1");
+			expect(mockEvalsGet).toHaveBeenCalledWith("e1", { dbId: undefined });
 			expect(mockOutputDetail).toHaveBeenCalledWith(
 				expect.anything(),
 				expect.objectContaining({ id: "e1", name: "eval1", score: 1.0 }),
@@ -129,6 +129,25 @@ describe("eval command", () => {
 					labels: ["ID", "Name", "Eval Type", "Agent ID", "Input", "Output", "Expected Output", "Score", "Created At"],
 				}),
 			);
+		});
+
+		it("passes --db-id to SDK get call", async () => {
+			mockEvalsGet.mockResolvedValue({
+				id: "e1",
+				name: "eval1",
+				eval_type: "accuracy",
+				agent_id: "a1",
+				input: "What is 2+2?",
+				output: "4",
+				expected_output: "4",
+				score: 1.0,
+				created_at: "2024-01-01",
+			});
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "eval", "get", "e1", "--db-id", "mydb"]);
+
+			expect(mockEvalsGet).toHaveBeenCalledWith("e1", { dbId: "mydb" });
 		});
 	});
 
