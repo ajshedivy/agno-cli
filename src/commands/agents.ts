@@ -59,7 +59,7 @@ agentCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				process.stdout.write(`${JSON.stringify(agent, null, 2)}\n`);
+				outputDetail(cmd, agent as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 

@@ -75,7 +75,7 @@ traceCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				printJson(result);
+				outputDetail(cmd, result as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 

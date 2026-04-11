@@ -58,7 +58,7 @@ workflowCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				process.stdout.write(`${JSON.stringify(workflow, null, 2)}\n`);
+				outputDetail(cmd, workflow as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 

@@ -86,7 +86,7 @@ memoryCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				printJson(memory);
+				outputDetail(cmd, memory as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 

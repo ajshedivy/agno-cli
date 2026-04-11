@@ -77,7 +77,7 @@ sessionCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				printJson(session);
+				outputDetail(cmd, session as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 

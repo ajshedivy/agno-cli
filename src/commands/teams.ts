@@ -59,7 +59,7 @@ teamCommand
 
 			const format = getOutputFormat(cmd);
 			if (format === "json") {
-				process.stdout.write(`${JSON.stringify(team, null, 2)}\n`);
+				outputDetail(cmd, team as Record<string, unknown>, { labels: [], keys: [] });
 				return;
 			}
 
