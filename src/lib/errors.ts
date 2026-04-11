@@ -107,6 +107,10 @@ export function handleError(err: unknown, ctx?: ErrorContext): never {
 	} else if (err instanceof RemoteServerUnavailableError) {
 		writeErr("Server unavailable. Is AgentOS running?");
 		process.exitCode = 2;
+	} else if (isConnectionError(err) || isNetworkAPIError(err)) {
+		const target = ctx?.url ? ` to ${ctx.url}` : "";
+		writeErr(`Cannot connect${target} -- is the server running?`);
+		process.exitCode = 2;
 	} else if (err instanceof APIError && err.status === 403) {
 		const isAdmin = err.message.toLowerCase().includes("admin");
 		if (isAdmin) {
@@ -115,10 +119,6 @@ export function handleError(err: unknown, ctx?: ErrorContext): never {
 			writeErr("Access denied. Check your API key permissions.");
 		}
 		process.exitCode = 1;
-	} else if (isConnectionError(err) || isNetworkAPIError(err)) {
-		const target = ctx?.url ? ` to ${ctx.url}` : "";
-		writeErr(`Cannot connect${target} -- is the server running?`);
-		process.exitCode = 2;
 	} else if (err instanceof APIError) {
 		writeErr(`API error (${err.status}): ${err.message}`);
 		process.exitCode = err.status >= 500 ? 2 : 1;
