@@ -15,13 +15,26 @@ vi.mock("ora", () => ({
 }));
 
 // Mock chalk to return strings without ANSI codes in tests
-vi.mock("chalk", () => ({
-	default: {
-		dim: (s: string) => s,
-		red: (s: string) => s,
-		green: (s: string) => s,
-		bold: (s: string) => s,
-	},
+vi.mock("chalk", () => {
+	const handler: ProxyHandler<Record<string, unknown>> = {
+		get(_target, prop) {
+			if (typeof prop === "string") {
+				const fn = (s: string) => s;
+				return new Proxy(fn, {
+					get: (_t, p) => (typeof p === "string" ? new Proxy((ss: string) => ss, handler) : undefined),
+					apply: (_t, _this, args) => String(args[0] ?? ""),
+				});
+			}
+			return undefined;
+		},
+	};
+	return { default: new Proxy({}, handler) };
+});
+
+// Mock paused-runs module
+const mockWritePausedRun = vi.fn();
+vi.mock("../../src/lib/paused-runs.js", () => ({
+	writePausedRun: (...args: unknown[]) => mockWritePausedRun(...args),
 }));
 
 // Mock output helpers
@@ -261,6 +274,136 @@ describe("stream renderer", () => {
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			expect(written).toContain("Workflow step output");
 		});
+
+		it("detects RunPaused event and calls writePausedRun", async () => {
+			const events: StreamEvent[] = [
+				{ event: "RunStarted", session_id: "sess-1", agent_id: "a1", run_id: "r1", created_at: 1 },
+				{ event: "RunContent", content: "partial", created_at: 2 },
+				{
+					event: "RunPaused",
+					run_id: "r1",
+					created_at: 3,
+					tools: [
+						{
+							tool_call_id: "tc-1",
+							tool_name: "execute_sql",
+							tool_args: { query: "DROP TABLE" },
+							created_at: 3,
+						},
+					],
+				},
+				{ event: "RunCompleted", content: "", created_at: 4 },
+			];
+			const stream = createMockStream(events);
+			const cmd = createProgram();
+
+			await handleStreamRun(cmd, stream, "agent", { resourceId: "agent-123" });
+
+			expect(mockWritePausedRun).toHaveBeenCalledWith(
+				expect.objectContaining({
+					agent_id: "agent-123",
+					run_id: "r1",
+					session_id: "sess-1",
+					resource_type: "agent",
+					tools: expect.arrayContaining([
+						expect.objectContaining({ tool_call_id: "tc-1", tool_name: "execute_sql" }),
+					]),
+				}),
+			);
+		});
+
+		it("displays tool info to stderr on RunPaused", async () => {
+			const events: StreamEvent[] = [
+				{ event: "RunStarted", session_id: "sess-1", agent_id: "a1", run_id: "r1", created_at: 1 },
+				{
+					event: "RunPaused",
+					run_id: "r1",
+					created_at: 2,
+					tools: [
+						{
+							tool_call_id: "tc-1",
+							tool_name: "execute_sql",
+							tool_args: { query: "DROP TABLE" },
+							created_at: 2,
+						},
+					],
+				},
+				{ event: "RunCompleted", content: "", created_at: 3 },
+			];
+			const stream = createMockStream(events);
+			const cmd = createProgram();
+
+			await handleStreamRun(cmd, stream, "agent", { resourceId: "agent-123" });
+
+			const stderrOutput = stderrSpy.mock.calls.map((c) => c[0]).join("");
+			expect(stderrOutput).toContain("execute_sql");
+			expect(stderrOutput).toContain("tc-1");
+			expect(stderrOutput).toContain("To confirm:");
+			expect(stderrOutput).toContain("To reject:");
+		});
+
+		it("captures session_id from RunStarted for RunPaused cache", async () => {
+			const events: StreamEvent[] = [
+				{ event: "RunStarted", session_id: "my-session", agent_id: "a1", run_id: "r1", created_at: 1 },
+				{
+					event: "RunPaused",
+					run_id: "r1",
+					created_at: 2,
+					tools: [{ tool_call_id: "tc-1", tool_name: "test_tool", tool_args: {}, created_at: 2 }],
+				},
+				{ event: "RunCompleted", content: "", created_at: 3 },
+			];
+			const stream = createMockStream(events);
+			const cmd = createProgram();
+
+			await handleStreamRun(cmd, stream, "agent", { resourceId: "a1" });
+
+			expect(mockWritePausedRun).toHaveBeenCalledWith(
+				expect.objectContaining({
+					session_id: "my-session",
+				}),
+			);
+		});
+
+		it("includes RunPaused in JSON array output in json mode", async () => {
+			mockGetOutputFormat.mockReturnValue("json");
+			const events: StreamEvent[] = [
+				{ event: "RunStarted", session_id: "s1", agent_id: "a1", run_id: "r1", created_at: 1 },
+				{
+					event: "RunPaused",
+					run_id: "r1",
+					created_at: 2,
+					tools: [{ tool_call_id: "tc-1", tool_name: "test", tool_args: {}, created_at: 2 }],
+				},
+				{ event: "RunCompleted", content: "", created_at: 3 },
+			];
+			const stream = createMockStream(events);
+			const cmd = createProgram();
+
+			await handleStreamRun(cmd, stream, "agent", { resourceId: "a1" });
+
+			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
+			const parsed = JSON.parse(written);
+			expect(parsed.some((e: { event: string }) => e.event === "RunPaused")).toBe(true);
+		});
+
+		it("does not detect RunPaused for team resource type", async () => {
+			const events: StreamEvent[] = [
+				{ event: "TeamRunStarted", session_id: "s1", created_at: 1 },
+				{
+					event: "TeamRunPaused",
+					created_at: 2,
+					tools: [{ tool_call_id: "tc-1", tool_name: "test", tool_args: {}, created_at: 2 }],
+				},
+				{ event: "TeamRunCompleted", content: "", created_at: 3 },
+			];
+			const stream = createMockStream(events);
+			const cmd = createProgram();
+
+			await handleStreamRun(cmd, stream, "team", { resourceId: "team-1" });
+
+			expect(mockWritePausedRun).not.toHaveBeenCalled();
+		});
 	});
 
 	describe("handleNonStreamRun", () => {
@@ -323,6 +466,58 @@ describe("stream renderer", () => {
 			const stderrOutput = stderrSpy.mock.calls.map((c) => c[0]).join("");
 			expect(stderrOutput).toContain("5/15");
 			expect(stderrOutput).toContain("0.80s");
+		});
+
+		it("detects paused state in non-streaming response and writes cache", async () => {
+			const result = {
+				content: "partial",
+				is_paused: true,
+				run_id: "r1",
+				session_id: "sess-1",
+				tools: [
+					{
+						tool_call_id: "tc-1",
+						tool_name: "execute_sql",
+						tool_args: { query: "DROP TABLE" },
+						created_at: 1,
+					},
+				],
+			};
+			const cmd = createProgram();
+
+			await handleNonStreamRun(cmd, () => Promise.resolve(result), {
+				resourceType: "agent",
+				resourceId: "agent-123",
+			});
+
+			expect(mockWritePausedRun).toHaveBeenCalledWith(
+				expect.objectContaining({
+					agent_id: "agent-123",
+					run_id: "r1",
+					session_id: "sess-1",
+					resource_type: "agent",
+				}),
+			);
+			const stderrOutput = stderrSpy.mock.calls.map((c) => c[0]).join("");
+			expect(stderrOutput).toContain("execute_sql");
+			expect(stderrOutput).toContain("To confirm:");
+		});
+
+		it("does not detect paused state for non-agent resource type", async () => {
+			const result = {
+				content: "partial",
+				is_paused: true,
+				run_id: "r1",
+				tools: [{ tool_call_id: "tc-1", tool_name: "test", tool_args: {}, created_at: 1 }],
+			};
+			const cmd = createProgram();
+
+			await handleNonStreamRun(cmd, () => Promise.resolve(result), {
+				resourceType: "team",
+				resourceId: "team-1",
+			});
+
+			expect(mockWritePausedRun).not.toHaveBeenCalled();
 		});
 	});
 
