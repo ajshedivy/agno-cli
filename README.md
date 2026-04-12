@@ -15,7 +15,7 @@ npm install -g agno-cli
 Or run directly without installing:
 
 ```bash
-npx ibmi-cli
+npx agno-cli
 ```
 
 Requires Node.js >= 20.
