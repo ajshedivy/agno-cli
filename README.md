@@ -12,6 +12,12 @@ Designed for both human operators and AI agent automation, with JSON output and 
 npm install -g agno-cli
 ```
 
+Or run directly without installing:
+
+```bash
+npx ibmi-cli
+```
+
 Requires Node.js >= 20.
 
 ### Configure
