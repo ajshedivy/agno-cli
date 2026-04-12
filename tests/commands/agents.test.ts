@@ -44,6 +44,13 @@ vi.mock("../../src/lib/stream.js", () => ({
 	handleNonStreamRun: (...args: unknown[]) => mockHandleNonStreamRun(...args),
 }));
 
+const mockReadPausedRun = vi.fn();
+const mockDeletePausedRun = vi.fn();
+vi.mock("../../src/lib/paused-runs.js", () => ({
+	readPausedRun: (...args: unknown[]) => mockReadPausedRun(...args),
+	deletePausedRun: (...args: unknown[]) => mockDeletePausedRun(...args),
+}));
+
 import { agentCommand } from "../../src/commands/agents.js";
 import { getOutputFormat } from "../../src/lib/output.js";
 
@@ -366,6 +373,149 @@ describe("agent command", () => {
 			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "msg"]);
 
 			expect(mockHandleError).toHaveBeenCalledWith(error, expect.anything());
+		});
+	});
+
+	describe("agent continue --confirm/--reject", () => {
+		const cachedState = {
+			agent_id: "a1",
+			run_id: "r1",
+			session_id: "s1",
+			resource_type: "agent",
+			paused_at: "2026-01-01T00:00:00Z",
+			tools: [
+				{
+					tool_call_id: "c1",
+					tool_name: "my_tool",
+					tool_args: { x: 1 },
+					requires_confirmation: true,
+					confirmed: null,
+				},
+			],
+		};
+
+		it("--confirm reads cache and sends confirmed payload", async () => {
+			mockReadPausedRun.mockReturnValue(cachedState);
+			mockAgentsContinue.mockResolvedValue({ content: "confirmed" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--confirm"]);
+
+			expect(mockReadPausedRun).toHaveBeenCalledWith("r1");
+			expect(mockAgentsContinue).toHaveBeenCalledWith("a1", "r1", expect.objectContaining({
+				stream: false,
+			}));
+			// Verify the tools string contains confirmed: true
+			const callArgs = mockAgentsContinue.mock.calls[0];
+			const toolsParsed = JSON.parse(callArgs[2].tools);
+			expect(toolsParsed[0].confirmed).toBe(true);
+			expect(mockDeletePausedRun).toHaveBeenCalledWith("r1");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("--confirm auto-fills session_id from cache", async () => {
+			mockReadPausedRun.mockReturnValue({ ...cachedState, session_id: "cached-session" });
+			mockAgentsContinue.mockResolvedValue({ content: "ok" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--confirm"]);
+
+			const callArgs = mockAgentsContinue.mock.calls[0];
+			expect(callArgs[2].sessionId).toBe("cached-session");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("--session-id flag overrides cached session_id", async () => {
+			mockReadPausedRun.mockReturnValue({ ...cachedState, session_id: "cached-session" });
+			mockAgentsContinue.mockResolvedValue({ content: "ok" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--confirm", "--session-id", "explicit-session"]);
+
+			const callArgs = mockAgentsContinue.mock.calls[0];
+			expect(callArgs[2].sessionId).toBe("explicit-session");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("--reject sends rejected payload with default note", async () => {
+			mockReadPausedRun.mockReturnValue(cachedState);
+			mockAgentsContinue.mockResolvedValue({ content: "rejected" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--reject"]);
+
+			const callArgs = mockAgentsContinue.mock.calls[0];
+			const toolsParsed = JSON.parse(callArgs[2].tools);
+			expect(toolsParsed[0].confirmed).toBe(false);
+			expect(toolsParsed[0].confirmation_note).toBe("Rejected via CLI");
+			expect(mockDeletePausedRun).toHaveBeenCalledWith("r1");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("--reject with custom note includes it", async () => {
+			mockReadPausedRun.mockReturnValue(cachedState);
+			mockAgentsContinue.mockResolvedValue({ content: "rejected" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--reject", "not safe"]);
+
+			const callArgs = mockAgentsContinue.mock.calls[0];
+			const toolsParsed = JSON.parse(callArgs[2].tools);
+			expect(toolsParsed[0].confirmation_note).toBe("not safe");
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("--confirm with no cached state shows error", async () => {
+			mockReadPausedRun.mockReturnValue(null);
+			const { writeError } = await import("../../src/lib/output.js");
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", "--confirm"]);
+
+			expect(writeError).toHaveBeenCalledWith(expect.stringContaining("No cached paused state"));
+			expect(process.exitCode).toBe(1);
+			expect(mockAgentsContinue).not.toHaveBeenCalled();
+		});
+
+		it("backward compat: positional tool_results still works", async () => {
+			mockAgentsContinue.mockResolvedValue({ content: "continued" });
+			vi.mocked(getOutputFormat).mockReturnValue("table");
+			const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1", '[{"tool_call_id":"c1"}]']);
+
+			expect(mockAgentsContinue).toHaveBeenCalledWith("a1", "r1", expect.objectContaining({
+				tools: '[{"tool_call_id":"c1"}]',
+			}));
+			expect(mockReadPausedRun).not.toHaveBeenCalled();
+
+			stdoutSpy.mockRestore();
+		});
+
+		it("no tool_results and no flags shows error", async () => {
+			const { writeError } = await import("../../src/lib/output.js");
+
+			const program = createProgram();
+			await program.parseAsync(["node", "agno", "agent", "continue", "a1", "r1"]);
+
+			expect(writeError).toHaveBeenCalledWith(expect.stringContaining("Provide tool results JSON"));
+			expect(process.exitCode).toBe(1);
 		});
 	});
 
