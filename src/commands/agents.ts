@@ -2,7 +2,8 @@ import type { AgentStream } from "@worksofadam/agentos-sdk";
 import { Command } from "commander";
 import { getBaseUrl, getClient } from "../lib/client.js";
 import { handleError } from "../lib/errors.js";
-import { getOutputFormat, outputDetail, outputList, writeSuccess } from "../lib/output.js";
+import { getOutputFormat, outputDetail, outputList, writeError, writeSuccess } from "../lib/output.js";
+import { deletePausedRun, readPausedRun } from "../lib/paused-runs.js";
 import { handleNonStreamRun, handleStreamRun } from "../lib/stream.js";
 
 export const agentCommand = new Command("agent").description("Manage agents");
@@ -117,30 +118,83 @@ agentCommand
 		}
 	});
 
+function buildConfirmPayload(tools: Array<Record<string, unknown>>): string {
+	const confirmed = tools.map((tool) => ({
+		...tool,
+		confirmed: true,
+	}));
+	return JSON.stringify(confirmed);
+}
+
+function buildRejectPayload(tools: Array<Record<string, unknown>>, note?: string): string {
+	const rejected = tools.map((tool) => ({
+		...tool,
+		confirmed: false,
+		confirmation_note: note ?? "Rejected via CLI",
+	}));
+	return JSON.stringify(rejected);
+}
+
 agentCommand
 	.command("continue")
 	.argument("<agent_id>", "Agent ID")
 	.argument("<run_id>", "Run ID to continue")
-	.argument("<tool_results>", "Tool results JSON to continue the run")
+	.argument("[tool_results]", "Tool results JSON (optional when using --confirm or --reject)")
 	.description("Continue an agent run")
 	.option("-s, --stream", "Stream the response via SSE")
+	.option("--confirm", "Confirm the paused tool call (auto-reconstruct payload from cache)")
+	.option("--reject [note]", "Reject the paused tool call with optional note")
 	.option("--session-id <id>", "Session ID")
 	.option("--user-id <id>", "User ID")
-	.action(async (agentId: string, runId: string, toolResults: string, options, cmd) => {
+	.action(async (agentId: string, runId: string, toolResults: string | undefined, options, cmd) => {
 		try {
 			const client = getClient(cmd);
+			let tools: string;
+			let sessionId = options.sessionId as string | undefined;
+
+			if (options.confirm) {
+				const cached = readPausedRun(runId);
+				if (!cached) {
+					writeError(`No cached paused state for run ${runId}. Provide tool results JSON directly or re-run the agent with --stream to capture the paused state.`);
+					process.exitCode = 1;
+					return;
+				}
+				tools = buildConfirmPayload(cached.tools);
+				if (!sessionId && cached.session_id) {
+					sessionId = cached.session_id;
+				}
+			} else if (options.reject !== undefined) {
+				const cached = readPausedRun(runId);
+				if (!cached) {
+					writeError(`No cached paused state for run ${runId}. Provide tool results JSON directly or re-run the agent with --stream to capture the paused state.`);
+					process.exitCode = 1;
+					return;
+				}
+				const note = typeof options.reject === "string" ? options.reject : undefined;
+				tools = buildRejectPayload(cached.tools, note);
+				if (!sessionId && cached.session_id) {
+					sessionId = cached.session_id;
+				}
+			} else if (toolResults) {
+				tools = toolResults;
+			} else {
+				writeError("Provide tool results JSON, or use --confirm/--reject for a paused tool call.");
+				process.exitCode = 1;
+				return;
+			}
+
 			if (options.stream) {
 				const stream = await client.agents.continue(agentId, runId, {
-					tools: toolResults,
-					sessionId: options.sessionId,
+					tools,
+					sessionId,
 					userId: options.userId,
 					stream: true,
 				});
 				await handleStreamRun(cmd, stream as AgentStream, "agent", { resourceId: agentId });
 			} else {
 				const result = await client.agents.continue(agentId, runId, {
-					tools: toolResults,
-					sessionId: options.sessionId,
+					tools,
+					sessionId,
 					userId: options.userId,
 					stream: false,
 				});
@@ -153,6 +207,11 @@ agentCommand
 						process.stdout.write(`${typeof content === "string" ? content : JSON.stringify(content, null, 2)}\n`);
 					}
 				}
+			}
+
+			// Clean up cache after successful continue
+			if (options.confirm || options.reject !== undefined) {
+				deletePausedRun(runId);
 			}
 		} catch (err) {
 			handleError(err, { resource: "Agent", url: getBaseUrl(cmd) });
