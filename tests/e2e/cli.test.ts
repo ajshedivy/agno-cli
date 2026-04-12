@@ -83,9 +83,10 @@ describe("CLI integration tests", () => {
 			expect(result.exitCode).toBe(0);
 		});
 
-		it("outputs '0.1.0' from built binary", () => {
+		it("outputs package.json version from built binary", () => {
+			const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, "package.json"), "utf-8"));
 			const result = runBuiltCli(["--version"], { HOME: tempHome });
-			expect(result.stdout.trim()).toBe("0.1.0");
+			expect(result.stdout.trim()).toBe(pkg.version);
 			expect(result.exitCode).toBe(0);
 		});
 	});

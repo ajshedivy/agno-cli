@@ -16,6 +16,8 @@
 		"build": "tsup",
 		"dev": "tsx src/bin/agno.ts",
 		"test": "vitest run",
+		"test:e2e": "vitest run --dir tests/e2e",
+		"test:integration": "vitest run --dir tests/integration",
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
