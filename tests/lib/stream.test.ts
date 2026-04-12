@@ -365,7 +365,7 @@ describe("stream renderer", () => {
 			);
 		});
 
-		it("includes RunPaused in JSON array output in json mode", async () => {
+		it("includes RunPaused in JSON array output and writes cache in json mode", async () => {
 			mockGetOutputFormat.mockReturnValue("json");
 			const events: StreamEvent[] = [
 				{ event: "RunStarted", session_id: "s1", agent_id: "a1", run_id: "r1", created_at: 1 },
@@ -385,6 +385,14 @@ describe("stream renderer", () => {
 			const written = stdoutSpy.mock.calls.map((c) => c[0]).join("");
 			const parsed = JSON.parse(written);
 			expect(parsed.some((e: { event: string }) => e.event === "RunPaused")).toBe(true);
+			// Cache must be written in JSON mode so --confirm/--reject work for AI agents
+			expect(mockWritePausedRun).toHaveBeenCalledWith(
+				expect.objectContaining({
+					agent_id: "a1",
+					run_id: "r1",
+					session_id: "s1",
+				}),
+			);
 		});
 
 		it("does not detect RunPaused for team resource type", async () => {

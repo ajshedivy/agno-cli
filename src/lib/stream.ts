@@ -128,8 +128,30 @@ export async function handleStreamRun(
 	try {
 		if (format === "json") {
 			const events: StreamEvent[] = [];
+			let jsonSessionId: string | null = null;
 			for await (const event of stream) {
 				events.push(event);
+				// Capture session_id from started event
+				if (startedEvent && event.event === startedEvent) {
+					jsonSessionId = ((event as Record<string, unknown>).session_id as string) ?? null;
+				}
+				// Write cache on RunPaused so --confirm/--reject work in JSON mode
+				if (pausedEvent && event.event === pausedEvent && options?.resourceId) {
+					const tools = (event as Record<string, unknown>).tools as
+						| Array<Record<string, unknown>>
+						| undefined;
+					const eventRunId = (event as Record<string, unknown>).run_id as string | undefined;
+					if (tools && tools.length > 0) {
+						writePausedRun({
+							agent_id: options.resourceId,
+							run_id: eventRunId ?? "unknown",
+							session_id: jsonSessionId,
+							resource_type: resourceType,
+							paused_at: new Date().toISOString(),
+							tools: tools as PausedRunState["tools"],
+						});
+					}
+				}
 			}
 			process.stdout.write(`${JSON.stringify(events, null, 2)}\n`);
 		} else {
