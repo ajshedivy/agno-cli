@@ -231,7 +231,8 @@ export async function handleNonStreamRun(
 
 		// Detect paused state (agent-only)
 		const resultObj = result as Record<string, unknown>;
-		const isPaused = resultObj?.is_paused === true || resultObj?.status === "paused";
+		const statusStr = typeof resultObj?.status === "string" ? resultObj.status.toLowerCase() : "";
+		const isPaused = resultObj?.is_paused === true || statusStr === "paused";
 		const tools = resultObj?.tools as Array<Record<string, unknown>> | undefined;
 		if (
 			isPaused &&
