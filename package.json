@@ -1,6 +1,6 @@
 {
 	"name": "agno-cli",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "CLI for interacting with AgentOS instances",
 	"type": "module",
 	"bin": {
