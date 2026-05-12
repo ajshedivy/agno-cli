@@ -54,6 +54,25 @@ agno-cli agent run my-agent "Hello, what can you do?"
 agno-cli agent run my-agent "Summarize this data" --stream
 ```
 
+## Use with Claude Code (skill)
+
+This repo doubles as a [Claude Code plugin marketplace](https://docs.anthropic.com/en/docs/claude-code/plugins) exposing the `agno-cli` skill, which teaches Claude how to drive a running AgentOS server with this CLI -- inspecting traces, listing/running agents and teams, managing knowledge and sessions, and more.
+
+**Via the Claude Code marketplace:**
+
+```bash
+claude plugin marketplace add ajshedivy/agno-cli
+claude plugin install agno-cli@agno-cli
+```
+
+**Via `npx skills`:**
+
+```bash
+npx skills add ajshedivy/agno-cli
+```
+
+Once installed, Claude activates the skill automatically based on context -- e.g. "check AgentOS status", "list my agents", "inspect that trace" -- or you can invoke it explicitly as `/agno-cli:agno-cli`.
+
 ## Configuration
 
 Config lives at `~/.agno/config.yaml`. You can manage multiple server contexts and switch between them.

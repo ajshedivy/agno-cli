@@ -1,0 +1,8 @@
+{
+  "name": "agno-cli",
+  "description": "Operate a running AgentOS server from the command line with agno-cli — agents, teams, workflows, traces, sessions, memories, knowledge, evals, approvals, schedules, and config.",
+  "version": "0.1.0",
+  "author": { "name": "ajshedivy" },
+  "license": "MIT",
+  "keywords": ["agno", "agentos", "cli", "agent", "trace", "session", "knowledge"]
+}

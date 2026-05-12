@@ -1,0 +1,20 @@
+{
+  "name": "agno-cli",
+  "owner": { "name": "ajshedivy" },
+  "metadata": {
+    "description": "Claude Code skill for operating an AgentOS server via the agno-cli CLI",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "agno-cli",
+      "source": "./plugins/agno-cli",
+      "description": "Operate a running AgentOS server from the command line with agno-cli",
+      "version": "0.1.0",
+      "author": { "name": "ajshedivy" },
+      "license": "MIT",
+      "keywords": ["agno", "agentos", "cli", "agent", "trace", "session", "knowledge"],
+      "category": "development"
+    }
+  ]
+}
